@@ -22,7 +22,7 @@ urlpatterns = [
     path("", include("lists.urls")),
     path("", include("events.urls")),
     path("select2/", include("django_select2.urls")),
-    path("health/", decorator_include(login_not_required, "health_check.urls")),
+    path("health/", decorator_include(login_not_required, "health_check.urls")),  # type: ignore[arg-type]
 ]
 
 # Build the accounts URLs
@@ -75,9 +75,12 @@ if settings.ADMIN_ENABLED:
     urlpatterns.append(path("admin/", admin.site.urls))
 
 # Add debug toolbar if in DEBUG mode
-if settings.DEBUG:
+if se1ttings.DEBUG:
     urlpatterns.append(path("__debug__/", include("debug_toolbar.urls")))
 
 # Serve static files in development
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=str(settings.STATICFILES_DIRS[0]))
+    urlpatterns += static(
+        settings.STATIC_URL,
+        document_root=str(settings.STATICFILES_DIRS[0]),
+    )
