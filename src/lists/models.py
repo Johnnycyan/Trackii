@@ -44,6 +44,15 @@ class CustomListManager(models.Manager):
             .order_by("name")
         )
 
+    def get_public_list(self, list_id):
+        """Return a public list by ID."""
+        return (
+            self.filter(id=list_id, is_public=True)
+            .select_related("owner")
+            .prefetch_related("collaborators")
+            .first()
+        )
+
 
 class CustomList(models.Model):
     """Model for custom lists."""
@@ -62,6 +71,14 @@ class CustomList(models.Model):
         blank=True,
         through="CustomListItem",
     )
+    is_public = models.BooleanField(
+        default=False,
+        help_text="Allow anyone with the link to view this list (read-only)",
+    )
+    allow_recommendations = models.BooleanField(
+        default=False,
+        help_text="Allow anyone to recommend items to add to this list (only for public lists)",
+    )
 
     objects = CustomListManager()
 
@@ -76,15 +93,27 @@ class CustomList(models.Model):
 
     def user_can_view(self, user):
         """Check if the user can view the list."""
+        if self.is_public:
+            return True
+        if not user or not user.is_authenticated:
+            return False
         return self.owner == user or user in self.collaborators.all()
 
     def user_can_edit(self, user):
         """Check if the user can edit the list."""
+        if not user or not user.is_authenticated:
+            return False
         return self.owner == user or user in self.collaborators.all()
 
     def user_can_delete(self, user):
         """Check if the user can delete the list."""
+        if not user or not user.is_authenticated:
+            return False
         return self.owner == user
+
+    def can_recommend(self):
+        """Check if recommendations are allowed for this list."""
+        return self.is_public and self.allow_recommendations
 
     @property
     def image(self):
@@ -126,3 +155,50 @@ class CustomListItem(models.Model):
     def __str__(self):
         """Return the name of the list item."""
         return self.item.title
+
+
+class ListRecommendation(models.Model):
+    """Model for item recommendations to custom lists."""
+
+    custom_list = models.ForeignKey(
+        CustomList,
+        on_delete=models.CASCADE,
+        related_name="recommendations",
+    )
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    recommended_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="The user who recommended this item (null if anonymous)",
+    )
+    anonymous_name = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        help_text="Display name for anonymous recommenders",
+    )
+    date_recommended = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        """Meta options for the model."""
+
+        ordering = ["-date_recommended"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["item", "custom_list"],
+                name="%(app_label)s_listrecommendation_unique_item_list",
+            ),
+        ]
+
+    def __str__(self):
+        """Return a string representation of the recommendation."""
+        return f"{self.item.title} recommended for {self.custom_list.name}"
+
+    @property
+    def recommender_display_name(self):
+        """Return the display name of the recommender."""
+        if self.recommended_by:
+            return self.recommended_by.username
+        return self.anonymous_name or "Anonymous"

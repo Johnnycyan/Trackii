@@ -1,14 +1,21 @@
 from django.contrib import admin
 
-from lists.models import CustomList, CustomListItem
+from lists.models import CustomList, CustomListItem, ListRecommendation
 
 
 class CustomListAdmin(admin.ModelAdmin):
     """Admin configuration for CustomList model."""
 
     search_fields = ["name", "description", "owner__username"]
-    list_display = ["name", "owner", "item_count", "get_last_update"]
-    list_filter = ["owner"]
+    list_display = [
+        "name",
+        "owner",
+        "is_public",
+        "allow_recommendations",
+        "item_count",
+        "get_last_update",
+    ]
+    list_filter = ["owner", "is_public", "allow_recommendations"]
     raw_id_fields = ["owner"]
     autocomplete_fields = ["collaborators"]
     filter_horizontal = ["collaborators"]
@@ -44,5 +51,27 @@ class CustomListItemAdmin(admin.ModelAdmin):
     get_media_type.short_description = "Media Type"
 
 
+class ListRecommendationAdmin(admin.ModelAdmin):
+    """Admin configuration for ListRecommendation model."""
+
+    search_fields = [
+        "item__title",
+        "custom_list__name",
+        "recommended_by__username",
+        "anonymous_name",
+    ]
+    list_display = ["item", "custom_list", "get_recommender", "date_recommended"]
+    list_filter = ["custom_list", "custom_list__owner"]
+    raw_id_fields = ["item", "custom_list", "recommended_by"]
+    readonly_fields = ["date_recommended"]
+
+    def get_recommender(self, obj):
+        """Return the display name of the recommender."""
+        return obj.recommender_display_name
+
+    get_recommender.short_description = "Recommended by"
+
+
 admin.site.register(CustomList, CustomListAdmin)
 admin.site.register(CustomListItem, CustomListItemAdmin)
+admin.site.register(ListRecommendation, ListRecommendationAdmin)
