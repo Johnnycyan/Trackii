@@ -21,43 +21,60 @@
 
     <div class="bg-[#2a2f35] rounded-lg p-6"
          x-data="{
-           mediaType: 'tv',
-           query: '',
-           mediaTypeLabels: {
-             {% for media_type in media_types %}'{{ media_type }}': '{{ media_type|media_type_readable }}',{% endfor %}
-           }
+           selectedType: { display: '{{ media_types.0|media_type_readable }}', value: '{{ media_types.0 }}' },
+           mediaTypes: [{% for media_type in media_types %}{ display: '{{ media_type|media_type_readable }}', value: '{{ media_type }}' }{% if not forloop.last %},{% endif %}{% endfor %}],
+           isOpen: false,
+           getPlaceholder() { return 'Search ' + this.selectedType.display.toLowerCase() + '...'; }
          }">
       
-      {# Media Type Selector #}
-      <div class="flex flex-wrap gap-2 mb-6">
-        {% for media_type in media_types %}
-          <button type="button"
-                  @click="mediaType = '{{ media_type }}'"
-                  :class="mediaType === '{{ media_type }}' ? 'bg-indigo-600 text-white' : 'bg-[#39404b] text-gray-300 hover:bg-[#454d5a]'"
-                  class="px-4 py-2 rounded-md transition-colors cursor-pointer text-sm">
-            {{ media_type|media_type_readable }}
-          </button>
-        {% endfor %}
-      </div>
+      {# Search Bar - matching the main search bar style #}
+      <form id="recommend-search-form" class="mb-6">
+        <div class="flex">
+          <div class="relative grow">
+            <input type="search"
+                   name="q"
+                   :placeholder="getPlaceholder()"
+                   class="w-full py-3 pl-12 pr-4 text-gray-300 bg-[#39404b] rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset placeholder-gray-500"
+                   hx-get="{% url 'recommend_search' custom_list.id %}"
+                   hx-trigger="keyup changed delay:400ms, search"
+                   hx-target="#search-results"
+                   hx-include="#recommend-search-form"
+                   hx-indicator="#search-spinner"
+                   autocomplete="off">
+            {% include "app/icons/magnifying-glass.svg" with classes="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" %}
+            <div id="search-spinner" class="htmx-indicator absolute right-4 top-1/2 transform -translate-y-1/2">
+              <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500"></div>
+            </div>
+          </div>
 
-      {# Search Input #}
-      <div class="relative mb-6">
-        <input type="text"
-               x-model="query"
-               placeholder="Search for media to recommend..."
-               class="w-full py-3 pl-12 pr-4 bg-[#39404b] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg"
-               hx-get="{% url 'recommend_search' custom_list.id %}"
-               hx-trigger="keyup changed delay:400ms, search"
-               hx-target="#search-results"
-               hx-include="[name='media_type']"
-               hx-indicator="#search-spinner"
-               autocomplete="off">
-        <input type="hidden" name="media_type" :value="mediaType">
-        {% include "app/icons/magnifying-glass.svg" with classes="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" %}
-        <div id="search-spinner" class="htmx-indicator absolute right-4 top-1/2 transform -translate-y-1/2">
-          <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500"></div>
+          <input type="hidden" name="media_type" :value="selectedType.value">
+
+          {# Media type dropdown #}
+          <button type="button"
+                  @click="isOpen = !isOpen"
+                  @click.away="isOpen = false"
+                  class="flex items-center justify-between w-36 px-4 py-3 text-gray-300 bg-[#39404b] rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset hover:bg-[#454d5a] transition-colors duration-200 cursor-pointer">
+            <span class="truncate" x-text="selectedType.display"></span>
+            {% include "app/icons/chevron-down.svg" with classes="w-4 h-4 ml-2" %}
+          </button>
+          <ul x-cloak
+              x-show="isOpen"
+              @keydown.escape.window="isOpen = false"
+              x-transition:enter="transition ease-out duration-100"
+              x-transition:enter-start="transform opacity-0 scale-95"
+              x-transition:enter-end="transform opacity-100 scale-100"
+              x-transition:leave="transition ease-in duration-75"
+              x-transition:leave-start="transform opacity-100 scale-100"
+              x-transition:leave-end="transform opacity-0 scale-95"
+              class="absolute z-20 py-1 mt-14 overflow-auto text-gray-300 bg-[#39404b] rounded-lg shadow-lg right-6 w-36">
+            <template x-for="type in mediaTypes" :key="type.value">
+              <li @click="selectedType = type; isOpen = false"
+                  class="px-4 py-2 cursor-pointer hover:bg-[#454d5a] transition duration-150 ease-in-out"
+                  x-text="type.display"></li>
+            </template>
+          </ul>
         </div>
-      </div>
+      </form>
 
       {# Search Results #}
       <div id="search-results">
@@ -71,7 +88,7 @@
     </div>
   </div>
 
-  {# Modal container for recommendation form #}
+  {# Modal container for media preview #}
   <div id="recommend-modal-container"></div>
 {% endblock content %}
 {# djlint:on #}

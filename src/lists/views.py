@@ -459,25 +459,48 @@ def recommend_item_page(request, list_id):
 @login_not_required
 @require_GET
 def recommend_search(request, list_id):
-    """Search for items to recommend - returns search results or recommendation form."""
+    """Search for items to recommend - returns search results or preview modal."""
     custom_list = get_object_or_404(CustomList, id=list_id)
 
     if not custom_list.can_recommend():
         return JsonResponse({"error": "Recommendations not enabled"}, status=403)
 
-    # Check if this is a request to show the recommendation form
-    show_form = request.GET.get("show_form")
-    if show_form:
+    # Check if this is a request to show the preview modal
+    show_preview = request.GET.get("show_preview")
+    if show_preview:
+        media_id = request.GET.get("media_id")
+        media_type = request.GET.get("media_type")
+
+        # Check if already in list or recommended
+        from app.models import Item
+
+        item = Item.objects.filter(
+            media_id=media_id,
+            media_type=media_type,
+        ).first()
+
+        already_in_list = False
+        already_recommended = False
+        if item:
+            already_in_list = custom_list.items.filter(id=item.id).exists()
+            already_recommended = ListRecommendation.objects.filter(
+                custom_list=custom_list,
+                item=item,
+            ).exists()
+
         context = {
             "custom_list": custom_list,
-            "media_id": request.GET.get("media_id"),
-            "media_type": request.GET.get("media_type"),
+            "media_id": media_id,
+            "media_type": media_type,
             "source": request.GET.get("source"),
             "title": request.GET.get("title"),
             "image": request.GET.get("image"),
+            "year": request.GET.get("year"),
             "is_authenticated": request.user.is_authenticated,
+            "already_in_list": already_in_list,
+            "already_recommended": already_recommended,
         }
-        return render(request, "lists/components/recommend_form_modal.html", context)
+        return render(request, "lists/components/recommend_preview_modal.html", context)
 
     query = request.GET.get("q", "").strip()
     media_type = request.GET.get("media_type", "tv")

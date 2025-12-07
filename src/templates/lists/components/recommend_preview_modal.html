@@ -1,0 +1,100 @@
+{% load app_tags %}
+
+{# djlint:off #}
+<div x-data="{ open: true }" x-show="open" x-cloak class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" @keydown.escape.window="open = false; document.getElementById('recommend-modal-container').innerHTML = ''">
+  <div @click.outside="open = false; document.getElementById('recommend-modal-container').innerHTML = ''" 
+       class="bg-[#2a2f35] rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0 scale-95"
+       x-transition:enter-end="opacity-100 scale-100"
+       x-transition:leave="transition ease-in duration-100"
+       x-transition:leave-start="opacity-100 scale-100"
+       x-transition:leave-end="opacity-0 scale-95">
+    
+    {# Header with close button #}
+    <div class="flex items-center justify-between p-4 border-b border-gray-700">
+      <h2 class="text-xl font-bold">{{ media_type|media_type_readable }} Details</h2>
+      <button @click="open = false; document.getElementById('recommend-modal-container').innerHTML = ''" 
+              class="text-gray-400 hover:text-white transition-colors cursor-pointer">
+        {% include "app/icons/x.svg" with classes="w-6 h-6" %}
+      </button>
+    </div>
+
+    {# Media Info #}
+    <div class="p-6">
+      <div class="flex gap-6">
+        {# Poster #}
+        <div class="w-32 flex-shrink-0">
+          <img src="{{ image }}" alt="{{ title }}" class="w-full aspect-[2/3] object-cover rounded-lg bg-[#3e454d]">
+        </div>
+        
+        {# Details #}
+        <div class="flex-1 min-w-0">
+          <h3 class="text-2xl font-bold text-white mb-2">{{ title }}</h3>
+          <p class="text-gray-400 mb-1">{{ media_type|media_type_readable }}</p>
+          {% if year %}
+            <p class="text-gray-500 text-sm">{{ year }}</p>
+          {% endif %}
+          
+          {% if already_in_list %}
+            <div class="mt-4 px-4 py-3 bg-gray-600/30 text-gray-400 rounded-lg text-center">
+              <p class="font-medium">Already in this list</p>
+            </div>
+          {% elif already_recommended %}
+            <div class="mt-4 px-4 py-3 bg-amber-600/20 text-amber-400 rounded-lg text-center">
+              <p class="font-medium">Already recommended</p>
+              <p class="text-sm mt-1">Waiting for approval</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if not already_in_list and not already_recommended %}
+        {# Recommendation Form #}
+        <form method="post" action="{% url 'submit_recommendation' custom_list.id %}" class="mt-6 pt-6 border-t border-gray-700">
+          {% csrf_token %}
+          <input type="hidden" name="media_id" value="{{ media_id }}">
+          <input type="hidden" name="media_type" value="{{ media_type }}">
+          <input type="hidden" name="source" value="{{ source }}">
+          
+          {% if not is_authenticated %}
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-300 mb-2">Your name (optional)</label>
+              <input type="text" name="recommender_name" placeholder="Anonymous" 
+                     class="w-full p-3 bg-[#39404b] rounded-lg text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-500">
+              <p class="text-xs text-gray-500 mt-1">Leave blank to recommend anonymously</p>
+            </div>
+          {% endif %}
+
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-300 mb-2">Note (optional)</label>
+            <textarea name="note" rows="3" placeholder="Why do you recommend this?" 
+                      class="w-full p-3 bg-[#39404b] rounded-lg text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-500 resize-none"></textarea>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" 
+                    @click="open = false; document.getElementById('recommend-modal-container').innerHTML = ''"
+                    class="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors cursor-pointer">
+              Cancel
+            </button>
+            <button type="submit" 
+                    class="flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2">
+              {% include "app/icons/plus.svg" with classes="w-5 h-5" %}
+              Recommend
+            </button>
+          </div>
+        </form>
+      {% else %}
+        <div class="mt-6 pt-6 border-t border-gray-700">
+          <button type="button" 
+                  @click="open = false; document.getElementById('recommend-modal-container').innerHTML = ''"
+                  class="w-full px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors cursor-pointer">
+            Close
+          </button>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{# djlint:on #}
