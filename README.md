@@ -32,13 +32,13 @@ Yamtrack is a self hosted media tracker for movies, tv shows, anime, manga, vide
 
 
 ## 📱 Repo Specific Installation
-Docker image is now available: ```docker pull ghcr.io/dannyvfilms/yamtrack:release```
+Docker image is now available: ```docker pull ghcr.io/Johnnycyan/yamtrack:release```
 
-I haven't figured out the workflow to publish Docker containers yet. Until then, use the following commands to build locally:
+To build locally use the following commands:
 
 ```bash
 cd /mnt/users/appdata
-git clone https://github.com/dannyvfilms/Yamtrack.git
+git clone https://github.com/Johnnycyan/Yamtrack.git
 cd Yamtrack
 
 cat > .env <<EOF
@@ -69,7 +69,7 @@ Then recreate your container with the new image (e.g. "Recreate" in Portainer).
 
 ## 🚀 Demo
 
-You can try the app at [yamtrack.fuzzygrim.com](https://yamtrack.fuzzygrim.com) using the username `demo` and password `demo`.
+You can try the original app at [yamtrack.fuzzygrim.com](https://yamtrack.fuzzygrim.com) using the username `demo` and password `demo`.
 
 ## ✨ Features
 
@@ -150,7 +150,7 @@ For detailed information on environment variables, please refer to the [Environm
 Clone the repository and change directory to it.
 
 ```bash
-git clone https://github.com/FuzzyGrim/Yamtrack.git
+git clone https://github.com/Johnnycyan/Yamtrack.git
 cd Yamtrack
 ```
 
@@ -193,11 +193,11 @@ The simplest way to show your support is to star the repository on GitHub. It he
 
 ### 🐛 Bug Reports
 
-Found a bug? Open an [issue](https://github.com/FuzzyGrim/Yamtrack/issues) on GitHub with detailed steps to reproduce it. Quality bug reports are incredibly valuable for improving stability.
+Found a bug? Open an [issue](https://github.com/Johnnycyan/Yamtrack/issues) on GitHub with detailed steps to reproduce it. Quality bug reports are incredibly valuable for improving stability.
 
 ### 💡 Feature Suggestions
 
-Have ideas for new features? Share them through [GitHub issues](https://github.com/FuzzyGrim/Yamtrack/issues). Your feedback helps shape the future of Yamtrack.
+Have ideas for new features? Share them through [GitHub issues](https://github.com/Johnnycyan/Yamtrack/issues). Your feedback helps shape the future of Yamtrack.
 
 ### 🧪 Contributing
 
@@ -207,4 +207,4 @@ Pull requests are welcome! Whether it's fixing typos, improving documentation, o
 
 If you'd like to support the project financially:
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/fuzzygrim)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/johnnycyan)
