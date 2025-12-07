@@ -1,9 +1,10 @@
 {% load app_tags %}
+{% load humanize %}
 
 {# djlint:off #}
 <div x-data="{ open: true }" x-show="open" x-cloak class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" @keydown.escape.window="open = false; document.getElementById('recommend-modal-container').innerHTML = ''">
   <div @click.outside="open = false; document.getElementById('recommend-modal-container').innerHTML = ''" 
-       class="bg-[#2a2f35] rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto"
+       class="bg-[#2a2f35] rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto"
        x-transition:enter="transition ease-out duration-200"
        x-transition:enter-start="opacity-0 scale-95"
        x-transition:enter-end="opacity-100 scale-100"
@@ -21,37 +22,81 @@
     </div>
 
     {# Media Info #}
-    <div class="p-6">
-      <div class="flex gap-6">
+    <div class="p-5">
+      <div class="flex gap-4">
         {# Poster #}
-        <div class="w-32 flex-shrink-0">
-          <img src="{{ image }}" alt="{{ title }}" class="w-full aspect-[2/3] object-cover rounded-lg bg-[#3e454d]">
+        <div class="w-24 flex-shrink-0">
+          <img src="{{ media.image }}" alt="{{ media.title }}" class="w-full aspect-[2/3] object-cover rounded-lg bg-[#3e454d]">
         </div>
         
         {# Details #}
         <div class="flex-1 min-w-0">
-          <h3 class="text-2xl font-bold text-white mb-2">{{ title }}</h3>
-          <p class="text-gray-400 mb-1">{{ media_type|media_type_readable }}</p>
-          {% if year %}
-            <p class="text-gray-500 text-sm">{{ year }}</p>
+          <h3 class="text-xl font-bold text-white mb-1">{{ media.title }}</h3>
+          <p class="text-gray-400 text-sm mb-1">{{ media_type|media_type_readable }}</p>
+          {% if media.first_air_date %}
+            <p class="text-gray-500 text-sm">{{ media.first_air_date }}</p>
+          {% elif media.release_date %}
+            <p class="text-gray-500 text-sm">{{ media.release_date }}</p>
+          {% elif media.year %}
+            <p class="text-gray-500 text-sm">{{ media.year }}</p>
           {% endif %}
           
-          {% if already_in_list %}
-            <div class="mt-4 px-4 py-3 bg-gray-600/30 text-gray-400 rounded-lg text-center">
-              <p class="font-medium">Already in this list</p>
-            </div>
-          {% elif already_recommended %}
-            <div class="mt-4 px-4 py-3 bg-amber-600/20 text-amber-400 rounded-lg text-center">
-              <p class="font-medium">Already recommended</p>
-              <p class="text-sm mt-1">Waiting for approval</p>
+          {# Source score #}
+          {% if media.score_count is not None %}
+            <div class="flex items-center mt-2">
+              {% include "app/icons/star.svg" with classes="w-4 h-4 mr-1 text-yellow-400 fill-yellow-400" %}
+              {% if media.score is not None %}
+                <span class="text-sm font-bold text-white">{{ media.score }}</span><span class="text-gray-400 ml-0.5 text-xs">/10</span>
+                <span class="text-xs text-gray-500 ml-2">({{ media.score_count|intcomma }})</span>
+              {% else %}
+                <span class="text-sm text-gray-400">-</span>
+              {% endif %}
             </div>
           {% endif %}
         </div>
       </div>
 
+      {# Genres #}
+      {% if media.genres %}
+        <div class="flex flex-wrap gap-1.5 mt-4">
+          {% for genre in media.genres %}
+            <span class="px-2 py-0.5 bg-violet-600 text-white rounded-full text-xs">{{ genre }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {# Synopsis #}
+      {% if media.synopsis %}
+        <div class="mt-4">
+          <div x-data="{ isExpanded: false, isClamped: false, checkClamp() { const element = this.$refs.synopsisText; this.isClamped = element.scrollHeight > element.clientHeight; } }"
+               x-init="$nextTick(() => checkClamp())">
+            <p x-ref="synopsisText"
+               :class="isExpanded ? '' : 'line-clamp-4'"
+               class="text-gray-300 text-sm text-pretty">{{ media.synopsis|linebreaksbr|safe }}</p>
+            <button x-show="isClamped"
+                    @click="isExpanded = !isExpanded"
+                    class="text-indigo-400 hover:text-indigo-300 text-xs mt-1 focus:outline-none transition-colors cursor-pointer">
+              <span x-text="isExpanded ? 'Show less' : 'Read more'"></span>
+            </button>
+          </div>
+        </div>
+      {% endif %}
+
+      {# Status messages #}
+      {% if already_in_list %}
+        <div class="mt-4 px-4 py-3 bg-gray-600/30 text-gray-400 rounded-lg text-center">
+          <p class="font-medium">Already in this list</p>
+        </div>
+      {% elif already_recommended %}
+        <div class="mt-4 px-4 py-3 bg-amber-600/20 text-amber-400 rounded-lg text-center">
+          <p class="font-medium">Already recommended</p>
+          <p class="text-sm mt-1">Waiting for approval</p>
+        </div>
+      {% endif %}
+
       {% if not already_in_list and not already_recommended %}
         {# Recommendation Form #}
-        <form method="post" action="{% url 'submit_recommendation' custom_list.id %}" class="mt-6 pt-6 border-t border-gray-700">
+        <form method="post" action="{% url 'submit_recommendation' custom_list.id %}" class="mt-5 pt-5 border-t border-gray-700">
           {% csrf_token %}
           <input type="hidden" name="media_id" value="{{ media_id }}">
           <input type="hidden" name="media_type" value="{{ media_type }}">
@@ -68,7 +113,7 @@
 
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-300 mb-2">Note (optional)</label>
-            <textarea name="note" rows="3" placeholder="Why do you recommend this?" 
+            <textarea name="note" rows="2" placeholder="Why do you recommend this?" 
                       class="w-full p-3 bg-[#39404b] rounded-lg text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-500 resize-none"></textarea>
           </div>
 
@@ -86,7 +131,7 @@
           </div>
         </form>
       {% else %}
-        <div class="mt-6 pt-6 border-t border-gray-700">
+        <div class="mt-5 pt-5 border-t border-gray-700">
           <button type="button" 
                   @click="open = false; document.getElementById('recommend-modal-container').innerHTML = ''"
                   class="w-full px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors cursor-pointer">

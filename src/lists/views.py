@@ -470,6 +470,10 @@ def recommend_search(request, list_id):
     if show_preview:
         media_id = request.GET.get("media_id")
         media_type = request.GET.get("media_type")
+        source = request.GET.get("source")
+
+        # Fetch full media metadata
+        media_metadata = services.get_media_metadata(media_type, media_id, source)
 
         # Check if already in list or recommended
         from app.models import Item
@@ -490,12 +494,10 @@ def recommend_search(request, list_id):
 
         context = {
             "custom_list": custom_list,
+            "media": media_metadata,
             "media_id": media_id,
             "media_type": media_type,
-            "source": request.GET.get("source"),
-            "title": request.GET.get("title"),
-            "image": request.GET.get("image"),
-            "year": request.GET.get("year"),
+            "source": source,
             "is_authenticated": request.user.is_authenticated,
             "already_in_list": already_in_list,
             "already_recommended": already_recommended,
@@ -628,7 +630,7 @@ def submit_recommendation(request, list_id):
         f'Your recommendation for "{item.title}" has been submitted!',
     )
 
-    return redirect("recommend_item", list_id=list_id)
+    return redirect("public_list_view", list_id=list_id)
 
 
 @require_GET
