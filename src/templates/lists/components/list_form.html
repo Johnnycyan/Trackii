@@ -1,97 +1,81 @@
 {% load widget_tweaks %}
 
-<div x-show="showModal"
-     x-cloak
-     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div @click.outside="showModal = false"
-         class="bg-[#2a2f35] p-6 rounded-lg w-152 max-h-[90vh] overflow-y-auto"
-         x-data="{ isPublic: {{ form.instance.is_public|yesno:'true,false' }} }">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold">
-                {% if form.instance.pk %}
-                    Edit List
-                {% else %}
-                    Create New List
-                {% endif %}
-            </h2>
-            <button @click="showModal = false"
-                    class="text-gray-400 hover:text-white transition-colors cursor-pointer">
-                {% include "app/icons/x.svg" with classes="w-6 h-6" %}
-            </button>
-        </div>
-        <form class="space-y-6" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="list_id" value="{{ custom_list.id }}">
-            {% for field in form %}
-                <div>
-                    {% if field.name == 'is_public' %}
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300">{{ field.label }}</label>
-                                <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
-                            </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" name="{{ field.name }}" class="sr-only peer" x-model="isPublic" {{
-                                    field.value|yesno:"checked," }}>
-                                    <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600">
-                                    </div>
-                                </label>
-                            </div>
-                        {% elif field.name == 'allow_recommendations' %}
-                            <div class="flex items-center justify-between"
-                                 :class="{ 'opacity-50': !isPublic }">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-300">{{ field.label }}</label>
-                                    <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
-                                </div>
-                                <label class="relative inline-flex items-center"
-                                       :class="isPublic ? 'cursor-pointer' : 'cursor-not-allowed'">
-                                    <input type="checkbox" name="{{ field.name }}" class="sr-only peer" :disabled="!isPublic" {{
-                                        field.value|yesno:"checked," }}>
-                                        <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 peer-disabled:opacity-50">
-                                        </div>
-                                    </label>
-                                </div>
-                            {% elif field.name != 'collaborators' %}
-                                <label class="block text text-sm font-medium mb-2 text-gray-300">{{ field.label }}</label>
-                                {{ field|add_class:"w-full p-2 bg-[#39404b] rounded-md text-white border border-gray-600 focus:outline-none
-                                focus:ring-2 focus:ring-[#4a9eff] appearance-none" }}
-                            {% else %}
-                                <label class="block text text-sm font-medium mb-2 text-gray-300">{{ field.label }}</label>
-                                {{ field }}
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-
-                    {% if form.instance.pk %}
-                        <div class="flex flex-row-reverse justify-between mt-6">
-                            <button type="submit"
-                                    formaction="{% url 'list_edit' %}?next={{ request.path }}"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 cursor-pointer">
-                                Save
-                            </button>
-                            {% if request.user == custom_list.owner %}
-                                <button type="submit"
-                                        formaction="{% url 'list_delete' %}?next={{ request.path }}"
-                                        class="px-4 py-2 rounded-md transition duration-300 bg-red-700 text-white hover:bg-red-800 cursor-pointer">
-                                    Delete
-                                </button>
-                            {% else %}
-                                <button type="submit"
-                                        formaction="{% url 'list_delete' %}?next={{ request.path }}"
-                                        class="px-4 py-2 rounded-md transition duration-300 bg-gray-600 text-gray-300 cursor-not-allowed"
-                                        disabled>Delete</button>
-                            {% endif %}
-                        </div>
-                    {% else %}
-                        <div class="flex justify-end pt-4">
-                            <button type="submit"
-                                    formaction="{% url 'list_create' %}?next={{ request.path }}"
-                                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors cursor-pointer">
-                                Create List
-                            </button>
-                        </div>
-                    {% endif %}
-                </form>
+{# djlint:off #}
+<div x-show="showModal" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div @click.outside="showModal = false" class="bg-[#2a2f35] p-6 rounded-lg w-152 max-h-[90vh] overflow-y-auto"
+    x-data="{ isPublic: {{ form.instance.is_public|yesno:'true,false' }} }">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold">
+        {% if form.instance.pk %}
+          Edit List
+        {% else %}
+          Create New List
+        {% endif %}
+      </h2>
+      <button @click="showModal = false" class="text-gray-400 hover:text-white transition-colors cursor-pointer">
+        {% include "app/icons/x.svg" with classes="w-6 h-6" %}
+      </button>
+    </div>
+    <form class="space-y-6" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="list_id" value="{{ custom_list.id }}">
+      {% for field in form %}
+        <div>
+          {% if field.name == 'is_public' %}
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-sm font-medium text-gray-300">{{ field.label }}</label>
+                <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="{{ field.name }}" class="sr-only peer" x-model="isPublic" {{ field.value|yesno:"checked," }}>
+                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
             </div>
+          {% elif field.name == 'allow_recommendations' %}
+            <div class="flex items-center justify-between" :class="{ 'opacity-50': !isPublic }">
+              <div>
+                <label class="block text-sm font-medium text-gray-300">{{ field.label }}</label>
+                <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+              </div>
+              <label class="relative inline-flex items-center" :class="isPublic ? 'cursor-pointer' : 'cursor-not-allowed'">
+                <input type="checkbox" name="{{ field.name }}" class="sr-only peer" :disabled="!isPublic" {{ field.value|yesno:"checked," }}>
+                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 peer-disabled:opacity-50"></div>
+              </label>
+            </div>
+          {% elif field.name != 'collaborators' %}
+            <label class="block text text-sm font-medium mb-2 text-gray-300">{{ field.label }}</label>
+            {{ field|add_class:"w-full p-2 bg-[#39404b] rounded-md text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#4a9eff] appearance-none" }}
+          {% else %}
+            <label class="block text text-sm font-medium mb-2 text-gray-300">{{ field.label }}</label>
+            {{ field }}
+          {% endif %}
         </div>
+      {% endfor %}
+
+      {% if form.instance.pk %}
+        <div class="flex flex-row-reverse justify-between mt-6">
+          <button type="submit" formaction="{% url 'list_edit' %}?next={{ request.path }}"
+            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 cursor-pointer">
+            Save
+          </button>
+          {% if request.user == custom_list.owner %}
+            <button type="submit" formaction="{% url 'list_delete' %}?next={{ request.path }}"
+              class="px-4 py-2 rounded-md transition duration-300 bg-red-700 text-white hover:bg-red-800 cursor-pointer">Delete</button>
+          {% else %}
+            <button type="submit" formaction="{% url 'list_delete' %}?next={{ request.path }}"
+              class="px-4 py-2 rounded-md transition duration-300 bg-gray-600 text-gray-300 cursor-not-allowed" disabled>Delete</button>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="flex justify-end pt-4">
+          <button type="submit" formaction="{% url 'list_create' %}?next={{ request.path }}"
+            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors cursor-pointer">
+            Create List
+          </button>
+        </div>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{# djlint:on #}
