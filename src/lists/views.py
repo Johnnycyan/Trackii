@@ -630,7 +630,7 @@ def submit_recommendation(request, list_id):
         f'Your recommendation for "{item.title}" has been submitted!',
     )
 
-    return redirect("public_list_view", list_id=list_id)
+    return redirect("list_detail", list_id=list_id)
 
 
 @require_GET
