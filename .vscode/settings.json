@@ -20,9 +20,10 @@
   "[html][django-html][handlebars][hbs][mustache][jinja][jinja-html][nj][njk][nunjucks][twig]": {
     "editor.defaultFormatter": "monosans.djlint"
   },
-  "python.testing.pytestArgs": [
-    "src"
-  ],
+  "python.testing.pytestArgs": ["src"],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
+  "[html]": {
+    "editor.defaultFormatter": "monosans.djlint"
+  }
 }
