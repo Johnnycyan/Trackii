@@ -72,7 +72,7 @@
                 x-transition:leave-end="transform opacity-0 scale-95"
                 class="absolute z-20 py-1 mt-1 overflow-auto text-gray-300 bg-[#39404b] rounded-lg shadow-lg right-0 w-36">
               <template x-for="type in mediaTypes" :key="type.value">
-                <li @click="selectedType = type; isOpen = false; $nextTick(() => { const input = document.getElementById('recommend-search-input'); if (input.value.trim().length >= 2) { htmx.trigger(input, 'search'); } })"
+                <li @click="selectedType = type; isOpen = false; $nextTick(() => { const form = document.getElementById('recommend-search-form'); if (form) { htmx.trigger(form, 'submit'); } })"
                     class="px-4 py-2 cursor-pointer hover:bg-[#454d5a] transition duration-150 ease-in-out"
                     x-text="type.display"></li>
               </template>
