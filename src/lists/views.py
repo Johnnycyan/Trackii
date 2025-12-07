@@ -281,6 +281,7 @@ def list_detail(request, list_id):
         "is_public_view": is_public_view,
         "public_view": public_view,
         "recommendation_count": recommendation_count,
+        "base_template": "base_public.html" if public_view else "base.html",
     }
 
     # Additional context for full page render
@@ -594,7 +595,8 @@ def submit_recommendation(request, list_id):
 
     logger.info("Recommendation created: %s for %s", item.title, custom_list.name)
     messages.success(
-        request, f'Your recommendation for "{item.title}" has been submitted!',
+        request,
+        f'Your recommendation for "{item.title}" has been submitted!',
     )
 
     return redirect("recommend_item", list_id=list_id)
