@@ -1,13 +1,13 @@
 {% if public_view %}
-  {% extends "base_public.html" %}
+    {% extends "base_public.html" %}
 {% else %}
-  {% extends "base.html" %}
+    {% extends "base.html" %}
 {% endif %}
 {% load static %}
 {% load app_tags %}
 
 {% block title %}
-  Recommend Item - {{ custom_list.name }} - Yamtrack
+    Recommend Item - {{ custom_list.name }} - Yamtrack
 {% endblock title %}
 
 {# djlint:off #}

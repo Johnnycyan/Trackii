@@ -214,10 +214,10 @@
 {% block js %}
   {% if form %}{{ form.media.js }}{% endif %}
 
-  <script>
+    <script>
     const mediaTypeLabels = {
       {% for media_type in media_types %}'{{ media_type }}': '{{ media_type|media_type_readable_plural }}',{% endfor %}
       'all': 'All Types'
     };
-  </script>
-{% endblock js %}
+    </script>
+  {% endblock js %}
