@@ -2,232 +2,229 @@
 {% load user_tags %}
 
 {% with current_sort|default_if_none:'' as current_sort_value %}
-<div class="media-card {% if secondary_color %}bg-[#39404b]{% else %}bg-[#2a2f35]{% endif %} rounded-lg overflow-hidden shadow-lg relative {% if active %}ring-2 ring-indigo-700{% endif %}"
-     x-data="{ trackOpen: false, listsOpen: false, historyOpen: false }">
-  <div class="relative">
-    <a href="{{ item|media_url }}">
-    <img alt="{{ title }}"
-         class="media-card-poster lazyload w-full {% if from_grid %}aspect-[2/3] aspect-2/3{% else %}h-48{% endif %} bg-[#3e454d] {% if item.image != IMG_NONE %}object-cover{% endif %}"
-         data-src="{{ item.image }}"
-         src="{{ IMG_NONE }}">
-    </a>
+    <div class="media-card {% if secondary_color %}bg-[#39404b]{% else %}bg-[#2a2f35]{% endif %} rounded-lg overflow-hidden shadow-lg relative {% if active %}ring-2 ring-indigo-700{% endif %}"
+         x-data="{ trackOpen: false, listsOpen: false, historyOpen: false }">
+        <div class="relative">
+            <a href="{{ item|media_url }}">
+                <img alt="{{ title }}"
+                     class="media-card-poster lazyload w-full {% if from_grid %}aspect-[2/3] aspect-2/3{% else %}h-48{% endif %} bg-[#3e454d] {% if item.image != IMG_NONE %}object-cover{% endif %}"
+                     data-src="{{ item.image }}"
+                     src="{{ IMG_NONE }}">
+            </a>
 
-    {% if media.status %}
-      <div class="media-status-chip absolute top-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
-           data-mobile-hide-on-mobile="{% if current_sort_value == 'score' or current_sort_value == 'time_left' or current_sort_value == 'progress' %}true{% else %}false{% endif %}">
-        {% if media.aggregated_status %}
-          {% with status_value=media.aggregated_status %}
-            <div class="w-4 h-4 {{ status_value|status_color }} {% if media.aggregated_start_date or media.aggregated_end_date %}mr-1.5{% endif %}">
-              {% if status_value == Status.COMPLETED.value %}
-                {% include "app/icons/states/completed.svg" %}
-              {% elif status_value == Status.IN_PROGRESS.value %}
-                {% include "app/icons/states/in-progress.svg" %}
-              {% elif status_value == Status.PAUSED.value %}
-                {% include "app/icons/states/paused.svg" %}
-              {% elif status_value == Status.PLANNING.value %}
-                {% include "app/icons/states/planning.svg" %}
-              {% elif status_value == Status.DROPPED.value %}
-                {% include "app/icons/states/dropped.svg" %}
-              {% endif %}
-            </div>
-          {% endwith %}
-          {% if media.aggregated_end_date is not None %}
-            <span class="text-sm text-white">{{ media.aggregated_end_date|user_date_format:user }}</span>
-          {% elif media.aggregated_start_date is not None %}
-            <span class="text-sm text-white">{{ media.aggregated_start_date|user_date_format:user }}</span>
-          {% endif %}
-        {% else %}
-          {% with status_value=media.status %}
-            <div class="w-4 h-4 {{ status_value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
-              {% if status_value == Status.COMPLETED.value %}
-                {% include "app/icons/states/completed.svg" %}
-              {% elif status_value == Status.IN_PROGRESS.value %}
-                {% include "app/icons/states/in-progress.svg" %}
-              {% elif status_value == Status.PAUSED.value %}
-                {% include "app/icons/states/paused.svg" %}
-              {% elif status_value == Status.PLANNING.value %}
-                {% include "app/icons/states/planning.svg" %}
-              {% elif status_value == Status.DROPPED.value %}
-                {% include "app/icons/states/dropped.svg" %}
-              {% endif %}
-            </div>
-          {% endwith %}
-          {% if media.end_date is not None %}
-            <span class="text-sm text-white">{{ media.end_date|user_date_format:user }}</span>
-          {% elif media.start_date is not None %}
-            <span class="text-sm text-white">{{ media.start_date|user_date_format:user }}</span>
-          {% endif %}
-        {% endif %}
-      </div>
-    {% endif %}
-
-    {% if media.aggregated_score is not None %}
-      <div class="media-score-chip absolute {% if from_grid %}sm:top-2 sm:right-2 sm:left-auto {% endif %}top-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
-           data-score-chip-mode="{{ score_chip_mode|default:'always' }}"
-           data-mobile-show="{% if current_sort_value == 'score' %}true{% else %}false{% endif %}">
-        {% include "app/icons/star.svg" with classes="w-4 h-4 text-yellow-400 mr-1 fill-current" %}
-        <span class="text-sm text-white">{{ media.aggregated_score }}</span>
-      </div>
-    {% elif media.score is not None %}
-      <div class="media-score-chip absolute {% if from_grid %}sm:top-2 sm:right-2 sm:left-auto {% endif %}top-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
-           data-score-chip-mode="{{ score_chip_mode|default:'always' }}"
-           data-mobile-show="{% if current_sort_value == 'score' %}true{% else %}false{% endif %}">
-        {% include "app/icons/star.svg" with classes="w-4 h-4 text-yellow-400 mr-1 fill-current" %}
-        <span class="text-sm text-white">{{ media.formatted_score }}</span>
-      </div>
-    {% endif %}
-
-    {% if media.aggregated_progress and media_type != MediaTypes.MOVIE.value %}
-      <div class="absolute bottom-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
-        <span class="text-sm text-white">
-          {{ media.formatted_aggregated_progress }}
-          {% if media.max_progress %}/ {{ media.max_progress }}{% endif %}
-        </span>
-      </div>
-    {% elif media.progress and media_type != MediaTypes.MOVIE.value %}
-      <div class="media-progress-chip absolute bottom-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
-           data-progress-chip-mode="{{ progress_chip_mode|default:'always' }}"
-           data-mobile-show="{% if current_sort_value == 'progress' %}true{% else %}false{% endif %}">
-        <span class="text-sm text-white">
-          {{ media.formatted_progress }}
-          {% if media.max_progress %}/ {{ media.max_progress }}{% endif %}
-        </span>
-      </div>
-    {% endif %}
-
-    {# Time Left display for time_left sort #}
-    {% if media_type == MediaTypes.TV.value and media.episodes_left > 0 %}
-      <div class="media-time-left-chip absolute bottom-2 right-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
-           data-time-left-mode="{{ time_left_chip_mode|default:'always' }}"
-           data-mobile-show="{% if current_sort_value == 'time_left' %}true{% else %}false{% endif %}">
-        <span class="text-sm text-white">
-          {{ media.time_left_display|default:media.formatted_time_left }}
-        </span>
-      </div>
-    {% endif %}
-
-    {% if media.repeats > 1 %}
-      {% if item.media_type != MediaTypes.GAME.value and item.media_type != MediaTypes.BOARDGAME.value or user.game_logging_style != 'sessions' %}
-      <div class="absolute sm:bottom-2 sm:right-2 sm:left-auto bottom-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
-        {% include "app/icons/repeat.svg" with classes="w-4 h-4 text-slate-200 mr-1" %}
-        <span class="text-sm text-white">{{ media.repeats }}</span>
-      </div>
-      {% endif %}
-    {% endif %}
-
-    <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover-tap:opacity-100{% if user.clickable_media_cards %} pointer-coarse:hidden{% endif %}">
-      <a href="{{ item|media_url }}" class="absolute inset-0"></a>
-
-      <div class="relative flex items-center justify-center space-x-2.5">
-        {% if item.media_type == MediaTypes.EPISODE.value %}
-          <button @click="trackOpen = true"
-                  class="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full hover:scale-110 hover:shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-200 cursor-pointer">
-            {% if media %}
-              {% include "app/icons/eye.svg" with classes="w-4 h-4" %}
-            {% else %}
-              {% include "app/icons/eye-closed.svg" with classes="w-4 h-4" %}
+            {% if media.status %}
+                <div class="media-status-chip absolute top-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
+                     data-mobile-hide-on-mobile="{% if current_sort_value == 'score' or current_sort_value == 'time_left' or current_sort_value == 'progress' %}true{% else %}false{% endif %}">
+                    {% if media.aggregated_status %}
+                        {% with status_value=media.aggregated_status %}
+                            <div class="w-4 h-4 {{ status_value|status_color }} {% if media.aggregated_start_date or media.aggregated_end_date %}mr-1.5{% endif %}">
+                                {% if status_value == Status.COMPLETED.value %}
+                                    {% include "app/icons/states/completed.svg" %}
+                                {% elif status_value == Status.IN_PROGRESS.value %}
+                                    {% include "app/icons/states/in-progress.svg" %}
+                                {% elif status_value == Status.PAUSED.value %}
+                                    {% include "app/icons/states/paused.svg" %}
+                                {% elif status_value == Status.PLANNING.value %}
+                                    {% include "app/icons/states/planning.svg" %}
+                                {% elif status_value == Status.DROPPED.value %}
+                                    {% include "app/icons/states/dropped.svg" %}
+                                {% endif %}
+                            </div>
+                        {% endwith %}
+                        {% if media.aggregated_end_date is not None %}
+                            <span class="text-sm text-white">{{ media.aggregated_end_date|user_date_format:user }}</span>
+                        {% elif media.aggregated_start_date is not None %}
+                            <span class="text-sm text-white">{{ media.aggregated_start_date|user_date_format:user }}</span>
+                        {% endif %}
+                    {% else %}
+                        {% with status_value=media.status %}
+                            <div class="w-4 h-4 {{ status_value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
+                                {% if status_value == Status.COMPLETED.value %}
+                                    {% include "app/icons/states/completed.svg" %}
+                                {% elif status_value == Status.IN_PROGRESS.value %}
+                                    {% include "app/icons/states/in-progress.svg" %}
+                                {% elif status_value == Status.PAUSED.value %}
+                                    {% include "app/icons/states/paused.svg" %}
+                                {% elif status_value == Status.PLANNING.value %}
+                                    {% include "app/icons/states/planning.svg" %}
+                                {% elif status_value == Status.DROPPED.value %}
+                                    {% include "app/icons/states/dropped.svg" %}
+                                {% endif %}
+                            </div>
+                        {% endwith %}
+                        {% if media.end_date is not None %}
+                            <span class="text-sm text-white">{{ media.end_date|user_date_format:user }}</span>
+                        {% elif media.start_date is not None %}
+                            <span class="text-sm text-white">{{ media.start_date|user_date_format:user }}</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
             {% endif %}
-          </button>
+
+            {% if media.aggregated_score is not None %}
+                <div class="media-score-chip absolute {% if from_grid %}sm:top-2 sm:right-2 sm:left-auto{% endif %}top-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
+                     data-score-chip-mode="{{ score_chip_mode|default:'always' }}"
+                     data-mobile-show="{% if current_sort_value == 'score' %}true{% else %}false{% endif %}">
+                    {% include "app/icons/star.svg" with classes="w-4 h-4 text-yellow-400 mr-1 fill-current" %}
+                    <span class="text-sm text-white">{{ media.aggregated_score }}</span>
+                </div>
+            {% elif media.score is not None %}
+                <div class="media-score-chip absolute {% if from_grid %}sm:top-2 sm:right-2 sm:left-auto{% endif %}top-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
+                     data-score-chip-mode="{{ score_chip_mode|default:'always' }}"
+                     data-mobile-show="{% if current_sort_value == 'score' %}true{% else %}false{% endif %}">
+                    {% include "app/icons/star.svg" with classes="w-4 h-4 text-yellow-400 mr-1 fill-current" %}
+                    <span class="text-sm text-white">{{ media.formatted_score }}</span>
+                </div>
+            {% endif %}
+
+            {% if media.aggregated_progress and media_type != MediaTypes.MOVIE.value %}
+                <div class="absolute bottom-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
+                    <span class="text-sm text-white">
+                        {{ media.formatted_aggregated_progress }}
+                        {% if media.max_progress %}/ {{ media.max_progress }}{% endif %}
+                    </span>
+                </div>
+            {% elif media.progress and media_type != MediaTypes.MOVIE.value %}
+                <div class="media-progress-chip absolute bottom-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
+                     data-progress-chip-mode="{{ progress_chip_mode|default:'always' }}"
+                     data-mobile-show="{% if current_sort_value == 'progress' %}true{% else %}false{% endif %}">
+                    <span class="text-sm text-white">
+                        {{ media.formatted_progress }}
+                        {% if media.max_progress %}/ {{ media.max_progress }}{% endif %}
+                    </span>
+                </div>
+            {% endif %}
+
+            {# Time Left display for time_left sort #}
+            {% if media_type == MediaTypes.TV.value and media.episodes_left > 0 %}
+                <div class="media-time-left-chip absolute bottom-2 right-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
+                     data-time-left-mode="{{ time_left_chip_mode|default:'always' }}"
+                     data-mobile-show="{% if current_sort_value == 'time_left' %}true{% else %}false{% endif %}">
+                    <span class="text-sm text-white">{{ media.time_left_display|default:media.formatted_time_left }}</span>
+                </div>
+            {% endif %}
+
+            {% if media.repeats > 1 %}
+                {% if item.media_type != MediaTypes.GAME.value and item.media_type != MediaTypes.BOARDGAME.value or user.game_logging_style != 'sessions' %}
+                    <div class="absolute sm:bottom-2 sm:right-2 sm:left-auto bottom-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
+                        {% include "app/icons/repeat.svg" with classes="w-4 h-4 text-slate-200 mr-1" %}
+                        <span class="text-sm text-white">{{ media.repeats }}</span>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover-tap:opacity-100{% if user.clickable_media_cards %} pointer-coarse:hidden{% endif %}">
+                <a href="{{ item|media_url }}" class="absolute inset-0"></a>
+
+                <div class="relative flex items-center justify-center space-x-2.5">
+                    {% if item.media_type == MediaTypes.EPISODE.value %}
+                        <button @click="trackOpen = true"
+                                class="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full hover:scale-110 hover:shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-200 cursor-pointer">
+                            {% if media %}
+                                {% include "app/icons/eye.svg" with classes="w-4 h-4" %}
+                            {% else %}
+                                {% include "app/icons/eye-closed.svg" with classes="w-4 h-4" %}
+                            {% endif %}
+                        </button>
+                    {% else %}
+                        {# Track Button #}
+                        <button class="p-2.5 bg-indigo-600 text-white rounded-full hover:bg-indigo-500 hover:scale-110 hover:shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-200 cursor-pointer"
+                                title="Add to tracker"
+                                hx-get="{% media_view_url 'track_modal' item %}"
+                                hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}", "instance_id": "{{ media.id }}"}'
+                                hx-target="#{% component_id 'track' item media.id %}"
+                                hx-trigger="click once"
+                                @click="trackOpen = true">
+                            {% include "app/icons/edit.svg" with classes="w-4 h-4" %}
+                        </button>
+                    {% endif %}
+
+                    {# Lists Button #}
+                    <button class="p-2.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-500 hover:scale-110 hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-200 cursor-pointer"
+                            title="Add to custom lists"
+                            hx-get="{% media_view_url 'lists_modal' item %}"
+                            hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}"}'
+                            hx-target="#{% component_id 'lists' item %}"
+                            hx-trigger="click once"
+                            @click="listsOpen = true">
+                        {% include "app/icons/list-add.svg" with classes="w-4 h-4" %}
+                    </button>
+
+                    {# History Button #}
+                    <button class="p-2.5 bg-amber-600 text-white rounded-full hover:bg-amber-500 hover:scale-110 hover:shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-all duration-200 cursor-pointer"
+                            title="View your activity history"
+                            hx-get="{% media_view_url 'history_modal' item %}"
+                            hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}"}'
+                            hx-target="#{% component_id 'history' item %}"
+                            hx-trigger="click once"
+                            @click="historyOpen = true">
+                        {% include "app/icons/history.svg" with classes="w-4 h-4" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="media-card-body p-3">
+            <a href="{{ item|media_url }}"
+               class="media-card-title text-sm font-semibold text-white hover:text-indigo-400 transition duration-300 line-clamp-1"
+               title="{{ title }}">{{ title }}</a>
+            {% if duration %}<p class="text-xs text-gray-400 mt-1">{{ duration }}</p>{% endif %}
+
+            {# Enhanced aggregated data display for duplicates; safe to leave empty if fields aren't present #}
+            {% if media.repeats and media.repeats != 1 %}
+                <div class="mt-2 space-y-1 text-xs text-gray-400">
+                    {% if media.aggregated_progress and item.media_type != MediaTypes.MOVIE.value %}
+                        <div class="flex items-center justify-between">
+                            <span>Total Progress:</span>
+                            <span class="text-indigo-400 font-medium">
+                                {{ media.formatted_aggregated_progress }}
+                                {% if media.max_progress %}/ {{ media.max_progress }}{% endif %}
+                            </span>
+                        </div>
+                    {% endif %}
+
+                    {% if media.aggregated_score %}
+                        <div class="flex items-center justify-between">
+                            <span>Rating:</span>
+                            <span class="text-yellow-400 font-medium">{{ media.aggregated_score }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        {% if item.media_type == MediaTypes.EPISODE.value %}
+            {% include "app/components/fill_track_episode.html" with request=request media=item episode=item episode_title=title csrf_token=csrf_token TRACK_TIME=TRACK_TIME user=user only %}
         {% else %}
-          {# Track Button #}
-          <button class="p-2.5 bg-indigo-600 text-white rounded-full hover:bg-indigo-500 hover:scale-110 hover:shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-200 cursor-pointer"
-                  title="Add to tracker"
-                  hx-get="{% media_view_url 'track_modal' item %}"
-                  hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}", "instance_id": "{{ media.id }}"}'
-                  hx-target="#{% component_id 'track' item media.id %}"
-                  hx-trigger="click once"
-                  @click="trackOpen = true">
-            {% include "app/icons/edit.svg" with classes="w-4 h-4" %}
-          </button>
+            {# Track Modal #}
+            <div x-show="trackOpen"
+                 @keydown.escape.window="trackOpen = false"
+                 class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div class="w-152 max-h-[90vh] px-4 md:px-0 relative z-60"
+                     @click.outside="trackOpen = false">
+                    <div id="{% component_id 'track' item media.id %}"></div>
+                </div>
+            </div>
         {% endif %}
 
-        {# Lists Button #}
-        <button class="p-2.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-500 hover:scale-110 hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-200 cursor-pointer"
-                title="Add to custom lists"
-                hx-get="{% media_view_url 'lists_modal' item %}"
-                hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}"}'
-                hx-target="#{% component_id 'lists' item %}"
-                hx-trigger="click once"
-                @click="listsOpen = true">
-          {% include "app/icons/list-add.svg" with classes="w-4 h-4" %}
-        </button>
+        {# Lists Modal #}
+        <div x-show="listsOpen"
+             @keydown.escape.window="listsOpen = false"
+             class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="w-96 max-h-[90vh] px-4 md:px-0 relative z-60"
+                 @click.outside="listsOpen = false">
+                <div id="{% component_id 'lists' item %}"></div>
+            </div>
+        </div>
 
-        {# History Button #}
-        <button class="p-2.5 bg-amber-600 text-white rounded-full hover:bg-amber-500 hover:scale-110 hover:shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-all duration-200 cursor-pointer"
-                title="View your activity history"
-                hx-get="{% media_view_url 'history_modal' item %}"
-                hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}"}'
-                hx-target="#{% component_id 'history' item %}"
-                hx-trigger="click once"
-                @click="historyOpen = true">
-          {% include "app/icons/history.svg" with classes="w-4 h-4" %}
-        </button>
-      </div>
+        {# History Modal #}
+        <div x-show="historyOpen"
+             @keydown.escape.window="historyOpen = false"
+             class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="w-96 max-h-[90vh] px-4 md:px-0 relative z-60"
+                 @click.outside="historyOpen = false">
+                <div id="{% component_id 'history' item %}"></div>
+            </div>
+        </div>
     </div>
-  </div>
-
-  <div class="media-card-body p-3">
-    <a href="{{ item|media_url }}"
-       class="media-card-title text-sm font-semibold text-white hover:text-indigo-400 transition duration-300 line-clamp-1"
-       title="{{ title }}">{{ title }}</a>
-    {% if duration %}
-      <p class="text-xs text-gray-400 mt-1">{{ duration }}</p>
-    {% endif %}
-
-    {# Enhanced aggregated data display for duplicates; safe to leave empty if fields aren't present #}
-    {% if media.repeats and media.repeats != 1 %}
-      <div class="mt-2 space-y-1 text-xs text-gray-400">
-        {% if media.aggregated_progress and item.media_type != MediaTypes.MOVIE.value %}
-          <div class="flex items-center justify-between">
-            <span>Total Progress:</span>
-            <span class="text-indigo-400 font-medium">
-              {{ media.formatted_aggregated_progress }}{% if media.max_progress %} / {{ media.max_progress }}{% endif %}
-            </span>
-          </div>
-        {% endif %}
-
-        {% if media.aggregated_score %}
-          <div class="flex items-center justify-between">
-            <span>Rating:</span>
-            <span class="text-yellow-400 font-medium">{{ media.aggregated_score }}</span>
-          </div>
-        {% endif %}
-      </div>
-    {% endif %}
-  </div>
-
-  {% if item.media_type == MediaTypes.EPISODE.value %}
-    {% include "app/components/fill_track_episode.html" with request=request media=item episode=item episode_title=title csrf_token=csrf_token TRACK_TIME=TRACK_TIME user=user only %}
-  {% else %}
-    {# Track Modal #}
-    <div x-show="trackOpen"
-         @keydown.escape.window="trackOpen = false"
-         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="w-152 max-h-[90vh] px-4 md:px-0 relative z-60"
-           @click.outside="trackOpen = false">
-        <div id="{% component_id 'track' item media.id %}"></div>
-      </div>
-    </div>
-  {% endif %}
-
-  {# Lists Modal #}
-  <div x-show="listsOpen"
-       @keydown.escape.window="listsOpen = false"
-       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="w-96 max-h-[90vh] px-4 md:px-0 relative z-60"
-         @click.outside="listsOpen = false">
-      <div id="{% component_id 'lists' item %}"></div>
-    </div>
-  </div>
-
-  {# History Modal #}
-  <div x-show="historyOpen"
-       @keydown.escape.window="historyOpen = false"
-       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="w-96 max-h-[90vh] px-4 md:px-0 relative z-60"
-         @click.outside="historyOpen = false">
-      <div id="{% component_id 'history' item %}"></div>
-    </div>
-  </div>
-</div>
 {% endwith %}

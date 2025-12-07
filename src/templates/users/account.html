@@ -4,173 +4,161 @@
 {% load static %}
 
 {% block title %}
-  Account - Yamtrack
+    Account - Yamtrack
 {% endblock title %}
 
 {% block settings_content %}
-  <div class="space-y-6">
-    <div class="bg-[#2a2f35] rounded-lg p-6">
-      <div class="flex items-center mb-5">
-        {% include "app/icons/person.svg" with classes="w-6 h-6 text-indigo-400 mr-3" %}
-        <h2 class="text-xl font-semibold">Profile Information</h2>
-      </div>
+    <div class="space-y-6">
+        <div class="bg-[#2a2f35] rounded-lg p-6">
+            <div class="flex items-center mb-5">
+                {% include "app/icons/person.svg" with classes="w-6 h-6 text-indigo-400 mr-3" %}
+                <h2 class="text-xl font-semibold">Profile Information</h2>
+            </div>
 
-      {% if user_form.non_field_errors %}
-        <div class="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200">
-          {% for error in user_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
-        </div>
-      {% endif %}
+            {% if user_form.non_field_errors %}
+                <div class="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200">
+                    {% for error in user_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
 
-      <form method="post" class="space-y-4">
-        {% csrf_token %}
-        <div>
-          <label for="{{ user_form.username.id_for_label }}"
-                 class="block text-sm font-medium mb-2 text-gray-300">Username</label>
-          <input id="{{ user_form.username.id_for_label }}"
-                 name="{{ user_form.username.html_name }}"
-                 class="w-full py-2 px-3 bg-[#39404b] rounded-md text-white text-sm border {% if user_form.username.errors %}border-red-500{% else %}border-gray-600{% endif %} focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                 type="text"
-                 value="{{ user_form.username.value|default:user.username }}">
-          {% if user_form.username.errors %}
-            <p class="mt-1 text-sm text-red-400">{{ user_form.username.errors.0 }}</p>
-          {% endif %}
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="{{ user_form.username.id_for_label }}"
+                           class="block text-sm font-medium mb-2 text-gray-300">Username</label>
+                    <input id="{{ user_form.username.id_for_label }}"
+                           name="{{ user_form.username.html_name }}"
+                           class="w-full py-2 px-3 bg-[#39404b] rounded-md text-white text-sm border {% if user_form.username.errors %}border-red-500{% else %}border-gray-600{% endif %} focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                           type="text"
+                           value="{{ user_form.username.value|default:user.username }}">
+                    {% if user_form.username.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ user_form.username.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="pt-2">
+                    <button type="submit"
+                            class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm cursor-pointer">
+                        {% include "app/icons/save.svg" with classes="w-4 h-4 mr-2" %}
+                        Save Changes
+                    </button>
+                </div>
+            </form>
         </div>
-        <div class="pt-2">
-          <button type="submit"
-                  class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm cursor-pointer">
-            {% include "app/icons/save.svg" with classes="w-4 h-4 mr-2" %}
-            Save Changes
-          </button>
+
+        <div class="bg-[#2a2f35] rounded-lg p-6">
+            <div class="flex items-center mb-5">
+                {% include "app/icons/padlock.svg" with classes="w-6 h-6 text-indigo-400 mr-3" %}
+                <h2 class="text-xl font-semibold">Change Password</h2>
+            </div>
+
+            {% if password_form.non_field_errors %}
+                <div class="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200">
+                    {% for error in password_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post"
+                  class="space-y-4"
+                  x-data="{ showCurrentPassword: false, showNewPassword: false, showConfirmPassword: false }">
+                {% csrf_token %}
+                <div class="relative">
+                    <label for="{{ password_form.old_password.id_for_label }}"
+                           class="block text-sm font-medium mb-2 text-gray-300">Current Password</label>
+                    <div class="relative">
+                        <input id="{{ password_form.old_password.id_for_label }}"
+                               name="{{ password_form.old_password.html_name }}"
+                               class="w-full py-2 px-3 pr-10 bg-[#39404b] rounded-md text-white text-sm border {% if password_form.old_password.errors %}border-red-500{% else %}border-gray-600{% endif %} focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                               :type="showCurrentPassword ? 'text' : 'password'"
+                               value="">
+                        <button type="button"
+                                tabindex="-1"
+                                @click="showCurrentPassword = !showCurrentPassword"
+                                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white cursor-pointer">
+                            <!-- Show when password is hidden -->
+                            <div x-show="!showCurrentPassword">{% include "app/icons/eye.svg" with classes="w-4 h-4" %}</div>
+                            <!-- Show when password is visible -->
+                            <div x-show="showCurrentPassword">{% include "app/icons/eye-closed.svg" with classes="w-4 h-4" %}</div>
+                        </button>
+                    </div>
+                    {% if password_form.old_password.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ password_form.old_password.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="relative">
+                    <label for="{{ password_form.new_password1.id_for_label }}"
+                           class="block text-sm font-medium mb-2 text-gray-300">New Password</label>
+                    <div class="relative">
+                        <input id="{{ password_form.new_password1.id_for_label }}"
+                               name="{{ password_form.new_password1.html_name }}"
+                               class="w-full py-2 px-3 pr-10 bg-[#39404b] rounded-md text-white text-sm border {% if password_form.new_password1.errors %}border-red-500{% else %}border-gray-600{% endif %} focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                               :type="showNewPassword ? 'text' : 'password'"
+                               value="">
+                        <button type="button"
+                                tabindex="-1"
+                                @click="showNewPassword = !showNewPassword"
+                                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white cursor-pointer">
+                            <!-- Show when password is hidden -->
+                            <div x-show="!showNewPassword">{% include "app/icons/eye.svg" with classes="w-4 h-4" %}</div>
+                            <!-- Show when password is visible -->
+                            <div x-show="showNewPassword">{% include "app/icons/eye-closed.svg" with classes="w-4 h-4" %}</div>
+                        </button>
+                    </div>
+                    {% if password_form.new_password1.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ password_form.new_password1.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="relative">
+                    <label for="{{ password_form.new_password2.id_for_label }}"
+                           class="block text-sm font-medium mb-2 text-gray-300">Confirm New Password</label>
+                    <div class="relative">
+                        <input id="{{ password_form.new_password2.id_for_label }}"
+                               name="{{ password_form.new_password2.html_name }}"
+                               class="w-full py-2 px-3 pr-10 bg-[#39404b] rounded-md text-white text-sm border {% if password_form.new_password2.errors %}border-red-500{% else %}border-gray-600{% endif %} focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                               :type="showConfirmPassword ? 'text' : 'password'"
+                               value="">
+                        <button type="button"
+                                tabindex="-1"
+                                @click="showConfirmPassword = !showConfirmPassword"
+                                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white cursor-pointer">
+                            <!-- Show when password is hidden -->
+                            <div x-show="!showConfirmPassword">{% include "app/icons/eye.svg" with classes="w-4 h-4" %}</div>
+                            <!-- Show when password is visible -->
+                            <div x-show="showConfirmPassword">{% include "app/icons/eye-closed.svg" with classes="w-4 h-4" %}</div>
+                        </button>
+                    </div>
+                    {% if password_form.new_password2.errors %}
+                        <p class="mt-1 text-sm text-red-400">{{ password_form.new_password2.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit"
+                            class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm cursor-pointer">
+                        {% include "app/icons/save.svg" with classes="w-4 h-4 mr-2" %}
+                        Update Password
+                    </button>
+                </div>
+            </form>
         </div>
-      </form>
+
+        {% get_providers as socialaccount_providers %}
+        {% if socialaccount_providers %}
+            <div class="bg-[#2a2f35] rounded-lg p-6">
+                <div class="flex items-center mb-5">
+                    {% include "app/icons/shield.svg" with classes="w-6 h-6 text-indigo-400 mr-3" %}
+                    <h2 class="text-xl font-semibold">Third-Party Connections</h2>
+                </div>
+                <p class="text-gray-400 mb-5 text-sm">Manage your connected third-party accounts for easier sign-in.</p>
+                <a href="{% url 'socialaccount_connections' %}"
+                   class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm">
+                    {% include "app/icons/link.svg" with classes="w-4 h-4 mr-2" %}
+                    Manage Account Connections
+                </a>
+            </div>
+        {% endif %}
+
     </div>
-
-    <div class="bg-[#2a2f35] rounded-lg p-6">
-      <div class="flex items-center mb-5">
-        {% include "app/icons/padlock.svg" with classes="w-6 h-6 text-indigo-400 mr-3" %}
-        <h2 class="text-xl font-semibold">Change Password</h2>
-      </div>
-
-      {% if password_form.non_field_errors %}
-        <div class="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200">
-          {% for error in password_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
-        </div>
-      {% endif %}
-
-      <form method="post"
-            class="space-y-4"
-            x-data="{ showCurrentPassword: false, showNewPassword: false, showConfirmPassword: false }">
-        {% csrf_token %}
-        <div class="relative">
-          <label for="{{ password_form.old_password.id_for_label }}"
-                 class="block text-sm font-medium mb-2 text-gray-300">Current Password</label>
-          <div class="relative">
-            <input id="{{ password_form.old_password.id_for_label }}"
-                   name="{{ password_form.old_password.html_name }}"
-                   class="w-full py-2 px-3 pr-10 bg-[#39404b] rounded-md text-white text-sm border {% if password_form.old_password.errors %}border-red-500{% else %}border-gray-600{% endif %} focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   :type="showCurrentPassword ? 'text' : 'password'"
-                   value="">
-            <button type="button"
-                    tabindex="-1"
-                    @click="showCurrentPassword = !showCurrentPassword"
-                    class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white cursor-pointer">
-              <!-- Show when password is hidden -->
-              <div x-show="!showCurrentPassword">
-                {% include "app/icons/eye.svg" with classes="w-4 h-4" %}
-              </div>
-              <!-- Show when password is visible -->
-              <div x-show="showCurrentPassword">
-                {% include "app/icons/eye-closed.svg" with classes="w-4 h-4" %}
-              </div>
-            </button>
-          </div>
-          {% if password_form.old_password.errors %}
-            <p class="mt-1 text-sm text-red-400">{{ password_form.old_password.errors.0 }}</p>
-          {% endif %}
-        </div>
-
-        <div class="relative">
-          <label for="{{ password_form.new_password1.id_for_label }}"
-                 class="block text-sm font-medium mb-2 text-gray-300">New Password</label>
-          <div class="relative">
-            <input id="{{ password_form.new_password1.id_for_label }}"
-                   name="{{ password_form.new_password1.html_name }}"
-                   class="w-full py-2 px-3 pr-10 bg-[#39404b] rounded-md text-white text-sm border {% if password_form.new_password1.errors %}border-red-500{% else %}border-gray-600{% endif %} focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   :type="showNewPassword ? 'text' : 'password'"
-                   value="">
-            <button type="button"
-                    tabindex="-1"
-                    @click="showNewPassword = !showNewPassword"
-                    class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white cursor-pointer">
-              <!-- Show when password is hidden -->
-              <div x-show="!showNewPassword">
-                {% include "app/icons/eye.svg" with classes="w-4 h-4" %}
-              </div>
-              <!-- Show when password is visible -->
-              <div x-show="showNewPassword">
-                {% include "app/icons/eye-closed.svg" with classes="w-4 h-4" %}
-              </div>
-            </button>
-          </div>
-          {% if password_form.new_password1.errors %}
-            <p class="mt-1 text-sm text-red-400">{{ password_form.new_password1.errors.0 }}</p>
-          {% endif %}
-        </div>
-
-        <div class="relative">
-          <label for="{{ password_form.new_password2.id_for_label }}"
-                 class="block text-sm font-medium mb-2 text-gray-300">Confirm New Password</label>
-          <div class="relative">
-            <input id="{{ password_form.new_password2.id_for_label }}"
-                   name="{{ password_form.new_password2.html_name }}"
-                   class="w-full py-2 px-3 pr-10 bg-[#39404b] rounded-md text-white text-sm border {% if password_form.new_password2.errors %}border-red-500{% else %}border-gray-600{% endif %} focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                   :type="showConfirmPassword ? 'text' : 'password'"
-                   value="">
-            <button type="button"
-                    tabindex="-1"
-                    @click="showConfirmPassword = !showConfirmPassword"
-                    class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white cursor-pointer">
-              <!-- Show when password is hidden -->
-              <div x-show="!showConfirmPassword">
-                {% include "app/icons/eye.svg" with classes="w-4 h-4" %}
-              </div>
-              <!-- Show when password is visible -->
-              <div x-show="showConfirmPassword">
-                {% include "app/icons/eye-closed.svg" with classes="w-4 h-4" %}
-              </div>
-            </button>
-          </div>
-          {% if password_form.new_password2.errors %}
-            <p class="mt-1 text-sm text-red-400">{{ password_form.new_password2.errors.0 }}</p>
-          {% endif %}
-        </div>
-
-        <div class="pt-2">
-          <button type="submit"
-                  class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm cursor-pointer">
-            {% include "app/icons/save.svg" with classes="w-4 h-4 mr-2" %}
-            Update Password
-          </button>
-        </div>
-      </form>
-    </div>
-    
-    {% get_providers as socialaccount_providers %}
-    {% if socialaccount_providers %}
-      <div class="bg-[#2a2f35] rounded-lg p-6">
-        <div class="flex items-center mb-5">
-          {% include "app/icons/shield.svg" with classes="w-6 h-6 text-indigo-400 mr-3" %}
-          <h2 class="text-xl font-semibold">Third-Party Connections</h2>
-        </div>
-        <p class="text-gray-400 mb-5 text-sm">Manage your connected third-party accounts for easier sign-in.</p>
-        <a href="{% url 'socialaccount_connections' %}"
-           class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm">
-          {% include "app/icons/link.svg" with classes="w-4 h-4 mr-2" %}
-          Manage Account Connections
-        </a>
-      </div>
-    {% endif %}
-
-  </div>
 
 {% endblock settings_content %}

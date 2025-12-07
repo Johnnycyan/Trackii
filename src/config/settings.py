@@ -232,7 +232,7 @@ else:
             cursor.execute(f"PRAGMA journal_mode={SQLITE_JOURNAL_MODE}")
             cursor.execute(f"PRAGMA synchronous={SQLITE_SYNCHRONOUS}")
             cursor.execute(
-                f"PRAGMA busy_timeout={int(SQLITE_BUSY_TIMEOUT_SECONDS * 1000)}"
+                f"PRAGMA busy_timeout={int(SQLITE_BUSY_TIMEOUT_SECONDS * 1000)}",
             )
         finally:
             cursor.close()
@@ -688,7 +688,7 @@ REDIRECT_LOGIN_TO_SSO = config("REDIRECT_LOGIN_TO_SSO", default=False, cast=bool
 
 # Configure LoginRequiredMiddleware to exclude static files
 LOGIN_REQUIRED_EXEMPT = [
-    r'^/static/.*$',
-    r'^/favicon\.ico$',
-    r'^/health/.*$',
+    r"^/static/.*$",
+    r"^/favicon\.ico$",
+    r"^/health/.*$",
 ]

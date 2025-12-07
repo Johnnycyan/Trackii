@@ -3,314 +3,12 @@
 {% load app_tags %}
 
 {% block title %}
-  Preferences - Yamtrack
+    Preferences - Yamtrack
 {% endblock title %}
 
 {% block settings_content %}
-  <div class="bg-[#2a2f35] rounded-lg p-6">
-    <div class="flex items-center mb-4">
-      <svg xmlns="http://www.w3.org/2000/svg"
-           width="24"
-           height="24"
-           viewBox="0 0 24 24"
-           fill="none"
-           stroke="currentColor"
-           stroke-width="2"
-           stroke-linecap="round"
-           stroke-linejoin="round"
-           class="w-6 h-6 text-indigo-400 mr-3">
-        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
-      <h2 class="text-xl font-semibold">User Preferences</h2>
-    </div>
-    <p class="text-gray-400 mb-5 text-sm">Customize your Yamtrack experience with these preference settings.</p>
-    
-    <form method="post">
-      {% csrf_token %}
-      
-      <!-- Display Preferences Section -->
-      <div class="mb-6">
-        <h3 class="text-lg font-medium text-gray-200 mb-3">Display Preferences</h3>
-
-        <!-- Activity History View -->
-        <div class="p-3 bg-[#39404b] rounded-md mb-4">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-gray-200 text-sm font-medium">Activity History View</label>
-            <span class="text-gray-400 text-xs">Choose which visualization to show on the Statistics page.</span>
-          </div>
-          <div class="relative" x-data="{ open: false, selectedValue: '{{ user.activity_history_view }}', selectedLabel: '{{ user.activity_history_view|default:'heatmap' }}' }">
-            <button type="button"
-                    @click="open = !open"
-                    @click.outside="open = false"
-                    class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer">
-              <span x-text="selectedLabel == 'heatmap' ? 'Activity Heatmap' : 'Stacked Bar Chart'"></span>
-              <svg xmlns="http://www.w3.org/2000/svg"
-                   width="24"
-                   height="24"
-                   viewBox="0 0 24 24"
-                   fill="none"
-                   stroke="currentColor"
-                   stroke-width="2"
-                   stroke-linecap="round"
-                   stroke-linejoin="round"
-                   class="w-4 h-4 text-gray-400">
-                <path d="m6 9 6 6 6-6"></path>
-              </svg>
-            </button>
-            <div x-show="open"
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="transform opacity-0 scale-95"
-                 x-transition:enter-end="transform opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="transform opacity-100 scale-100"
-                 x-transition:leave-end="transform opacity-0 scale-95"
-                 class="absolute left-0 right-0 mt-2 py-1 bg-[#272c31] rounded-md shadow-lg overflow-hidden z-10 border border-gray-600">
-              <button type="button"
-                      @click="selectedValue = 'heatmap'; selectedLabel = 'Activity Heatmap'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                Activity Heatmap
-              </button>
-              <button type="button"
-                      @click="selectedValue = 'stacked'; selectedLabel = 'Stacked Bar Chart'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                Stacked Bar Chart
-              </button>
-            </div>
-            <input type="hidden" name="activity_history_view" x-bind:value="selectedValue">
-          </div>
-        </div>
-        
-        <!-- Date Format -->
-        <div class="p-3 bg-[#39404b] rounded-md mb-4">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-gray-200 text-sm font-medium">Date Format</label>
-            <span class="text-gray-400 text-xs">Choose how dates are displayed throughout the application.</span>
-          </div>
-          <div class="relative" x-data="{ open: false, selectedValue: '{{ user.date_format }}', selectedLabel: '{{ user.date_format|date_format_display }}' }">
-            <button type="button"
-                    @click="open = !open"
-                    @click.outside="open = false"
-                    class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer">
-              <span x-text="selectedLabel"></span>
-              <svg xmlns="http://www.w3.org/2000/svg"
-                   width="24"
-                   height="24"
-                   viewBox="0 0 24 24"
-                   fill="none"
-                   stroke="currentColor"
-                   stroke-width="2"
-                   stroke-linecap="round"
-                   stroke-linejoin="round"
-                   class="w-4 h-4 text-gray-400">
-                <path d="m6 9 6 6 6-6"></path>
-              </svg>
-            </button>
-            <div x-show="open"
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="transform opacity-0 scale-95"
-                 x-transition:enter-end="transform opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="transform opacity-100 scale-100"
-                 x-transition:leave-end="transform opacity-0 scale-95"
-                 class="absolute left-0 right-0 mt-2 py-1 bg-[#272c31] rounded-md shadow-lg overflow-hidden z-10 border border-gray-600">
-              <button type="button" 
-                      @click="selectedValue = 'system_default'; selectedLabel = 'System default (locale) — Aug 12, 2025 / 12 Aug 2025'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                System default (locale) — Aug 12, 2025 / 12 Aug 2025
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'iso_8601'; selectedLabel = 'ISO 8601 — 2025-08-12'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                ISO 8601 — 2025-08-12
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'month_d_yyyy'; selectedLabel = 'Month D, YYYY — Aug 12, 2025'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                Month D, YYYY — Aug 12, 2025
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'd_mon_yyyy'; selectedLabel = 'D Mon YYYY — 12 Aug 2025'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                D Mon YYYY — 12 Aug 2025
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'm_d_yyyy'; selectedLabel = 'M/D/YYYY — 08/12/2025'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                M/D/YYYY — 08/12/2025
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'd_m_yyyy'; selectedLabel = 'D/M/YYYY — 12/08/2025'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                D/M/YYYY — 12/08/2025
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'dd_mm_yyyy'; selectedLabel = 'DD.MM.YYYY — 12.08.2025'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                DD.MM.YYYY — 12.08.2025
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'yyyy_mm_dd'; selectedLabel = 'YYYY/MM/DD — 2025/08/12'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                YYYY/MM/DD — 2025/08/12
-              </button>
-            </div>
-            <input type="hidden" name="date_format" x-bind:value="selectedValue">
-          </div>
-        </div>
-
-        <!-- Time Format -->
-        <div class="p-3 bg-[#39404b] rounded-md">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-gray-200 text-sm font-medium">Time Format</label>
-            <span class="text-gray-400 text-xs">Choose how times are displayed throughout the application.</span>
-          </div>
-          <div class="relative" x-data="{ open: false, selectedValue: '{{ user.time_format }}', selectedLabel: '{{ user.time_format|time_format_display }}' }">
-            <button type="button"
-                    @click="open = !open"
-                    @click.outside="open = false"
-                    class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer">
-              <span x-text="selectedLabel"></span>
-              <svg xmlns="http://www.w3.org/2000/svg"
-                   width="24"
-                   height="24"
-                   viewBox="0 0 24 24"
-                   fill="none"
-                   stroke="currentColor"
-                   stroke-width="2"
-                   stroke-linecap="round"
-                   stroke-linejoin="round"
-                   class="w-4 h-4 text-gray-400">
-                <path d="m6 9 6 6 6-6"></path>
-              </svg>
-            </button>
-            <div x-show="open"
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="transform opacity-0 scale-95"
-                 x-transition:enter-end="transform opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="transform opacity-100 scale-100"
-                 x-transition:leave-end="transform opacity-0 scale-95"
-                 class="absolute left-0 right-0 mt-2 py-1 bg-[#272c31] rounded-md shadow-lg overflow-hidden z-10 border border-gray-600">
-              <button type="button" 
-                      @click="selectedValue = 'system_default'; selectedLabel = 'System default (locale) — 6:45 PM / 18:45'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                System default (locale) — 6:45 PM / 18:45
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'h_mm_ampm'; selectedLabel = '12-hour (h:mm AM/PM) — 6:45 PM'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                12-hour (h:mm AM/PM) — 6:45 PM
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'hh_mm_ampm'; selectedLabel = '12-hour, leading zero (hh:mm AM/PM) — 06:45 PM'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                12-hour, leading zero (hh:mm AM/PM) — 06:45 PM
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'hh_mm'; selectedLabel = '24-hour (HH:mm) — 18:45'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                24-hour (HH:mm) — 18:45
-              </button>
-              <button type="button" 
-                      @click="selectedValue = 'hh_mm_ss'; selectedLabel = '24-hour with seconds (HH:mm:ss) — 18:45:00'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                24-hour with seconds (HH:mm:ss) — 18:45:00
-              </button>
-            </div>
-            <input type="hidden" name="time_format" x-bind:value="selectedValue">
-          </div>
-        </div>
-
-        <!-- Game Logging Style -->
-        <div class="p-3 bg-[#39404b] rounded-md mt-4">
-          <div class="flex items-center justify-between mb-2">
-            <label class="text-gray-200 text-sm font-medium">Game &amp; Board Game Logging Style</label>
-            <span class="text-gray-400 text-xs">Choose how game and board game entries are displayed on the History page.</span>
-          </div>
-          <div class="relative" x-data="{ open: false, selectedValue: '{{ user.game_logging_style|default:'repeats' }}', selectedLabel: '{{ user.game_logging_style|default:'repeats' }}' }">
-            <button type="button"
-                    @click="open = !open"
-                    @click.outside="open = false"
-                    class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer">
-              <span x-text="selectedValue === 'sessions' ? 'Sessions — new entry per play; exact history' : 'Repeats — update one entry; spreads time across range'"></span>
-              <svg xmlns="http://www.w3.org/2000/svg"
-                   width="24"
-                   height="24"
-                   viewBox="0 0 24 24"
-                   fill="none"
-                   stroke="currentColor"
-                   stroke-width="2"
-                   stroke-linecap="round"
-                   stroke-linejoin="round"
-                   class="w-4 h-4 text-gray-400">
-                <path d="m6 9 6 6 6-6"></path>
-              </svg>
-            </button>
-            <div x-show="open"
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="transform opacity-0 scale-95"
-                 x-transition:enter-end="transform opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="transform opacity-100 scale-100"
-                 x-transition:leave-end="transform opacity-0 scale-95"
-                 class="absolute left-0 right-0 mt-2 py-1 bg-[#272c31] rounded-md shadow-lg overflow-hidden z-10 border border-gray-600">
-              <button type="button"
-                      @click="selectedValue = 'sessions'; selectedLabel = 'sessions'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                Sessions — new entry per play; exact history
-              </button>
-              <button type="button"
-                      @click="selectedValue = 'repeats'; selectedLabel = 'repeats'; open = false"
-                      class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
-                Repeats — update one entry; spreads time across range
-              </button>
-            </div>
-            <input type="hidden" name="game_logging_style" x-bind:value="selectedValue">
-          </div>
-        </div>
-      </div>
-
-      <div class="border-t border-gray-600 my-5"></div>
-
-      <!-- Library Management Section -->
-      <div class="mb-6"
-           x-data="{
-             enabled: {{ auto_pause_enabled|yesno:'true,false' }},
-             rules: JSON.parse('{{ auto_pause_rules_json|escapejs }}') || [],
-             defaultLibrary: 'all',
-             libraryLabels: JSON.parse('{{ library_labels_json|escapejs }}'),
-             init() {
-               this.enabled = this.rules.length > 0;
-             },
-             addRule() {
-               const library = this.defaultLibrary || 'all';
-               this.rules.push({ library, weeks: 16 });
-               this.enabled = this.rules.length > 0;
-             },
-             removeRule(index) {
-               this.rules.splice(index, 1);
-               this.enabled = this.rules.length > 0;
-             },
-             primaryButtonLabel() {
-               return this.rules.length
-                 ? 'Enabled. Click to add additional rule.'
-                 : 'Disabled. Click to add rule.';
-             },
-             handlePrimaryAction() {
-               this.addRule();
-             }
-           }">
-        <div class="p-4 bg-[#39404b] rounded-md border border-gray-700">
-          <div class="flex items-start justify-between mb-3 space-x-4">
-            <label class="text-gray-200 text-sm font-medium">Library Management</label>
-            <span class="text-gray-400 text-xs text-right">Change “In Progress” items to "Paused" after a set time.</span>
-          </div>
-
-          <button type="button"
-                  @click="handlePrimaryAction"
-                  class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer">
-            <span x-text="primaryButtonLabel()"></span>
+    <div class="bg-[#2a2f35] rounded-lg p-6">
+        <div class="flex items-center mb-4">
             <svg xmlns="http://www.w3.org/2000/svg"
                  width="24"
                  height="24"
@@ -320,31 +18,281 @@
                  stroke-width="2"
                  stroke-linecap="round"
                  stroke-linejoin="round"
-                 class="w-4 h-4 text-gray-400">
-              <path d="m6 9 6 6 6-6"></path>
+                 class="w-6 h-6 text-indigo-400 mr-3">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                </path>
+                <circle cx="12" cy="12" r="3"></circle>
             </svg>
-          </button>
+            <h2 class="text-xl font-semibold">User Preferences</h2>
+        </div>
+        <p class="text-gray-400 mb-5 text-sm">Customize your Yamtrack experience with these preference settings.</p>
 
-          <input type="hidden" name="auto_pause_enabled" :value="enabled ? 1 : 0">
+        <form method="post">
+            {% csrf_token %}
 
-          <div x-show="enabled" x-cloak class="mt-4">
-            <input type="hidden"
-                   name="auto_pause_rules"
-                   x-bind:value="JSON.stringify(rules)">
+            <!-- Display Preferences Section -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-200 mb-3">Display Preferences</h3>
 
-            <template x-if="!rules.length">
-              <p class="text-sm text-gray-400 italic">No auto-pause rules yet. Add one to get started.</p>
-            </template>
+                <!-- Activity History View -->
+                <div class="p-3 bg-[#39404b] rounded-md mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-gray-200 text-sm font-medium">Activity History View</label>
+                        <span class="text-gray-400 text-xs">Choose which visualization to show on the Statistics page.</span>
+                    </div>
+                    <div class="relative"
+                         x-data="{ open: false, selectedValue: '{{ user.activity_history_view }}', selectedLabel: '{{ user.activity_history_view|default:'heatmap' }}' }">
+                        <button type="button"
+                                @click="open = !open"
+                                @click.outside="open = false"
+                                class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer">
+                            <span x-text="selectedLabel == 'heatmap' ? 'Activity Heatmap' : 'Stacked Bar Chart'"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 width="24"
+                                 height="24"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 class="w-4 h-4 text-gray-400">
+                                <path d="m6 9 6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute left-0 right-0 mt-2 py-1 bg-[#272c31] rounded-md shadow-lg overflow-hidden z-10 border border-gray-600">
+                            <button type="button"
+                                    @click="selectedValue = 'heatmap'; selectedLabel = 'Activity Heatmap'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                Activity Heatmap
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'stacked'; selectedLabel = 'Stacked Bar Chart'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                Stacked Bar Chart
+                            </button>
+                        </div>
+                        <input type="hidden"
+                               name="activity_history_view"
+                               x-bind:value="selectedValue">
+                    </div>
+                </div>
 
-            <div class="space-y-3 mt-3">
-              <template x-for="(rule, index) in rules" :key="`auto-pause-${index}`">
-                <div class="flex flex-col md:flex-row md:items-center gap-3 bg-[#2f353f] rounded-md border border-gray-700 p-0 md:p-0">
-                  <div class="flex-1" x-data="{ hasValue: !!rule.library }" x-init="$watch('rule.library', value => hasValue = !!value)">
-                    <div class="relative">
-                      <button type="button"
-                              class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
-                              @click="$refs.librarySelect.focus()">
-                        <span x-text="libraryLabels[rule.library] || 'All Libraries'"></span>
+                <!-- Date Format -->
+                <div class="p-3 bg-[#39404b] rounded-md mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-gray-200 text-sm font-medium">Date Format</label>
+                        <span class="text-gray-400 text-xs">Choose how dates are displayed throughout the application.</span>
+                    </div>
+                    <div class="relative"
+                         x-data="{ open: false, selectedValue: '{{ user.date_format }}', selectedLabel: '{{ user.date_format|date_format_display }}' }">
+                        <button type="button"
+                                @click="open = !open"
+                                @click.outside="open = false"
+                                class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer">
+                            <span x-text="selectedLabel"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 width="24"
+                                 height="24"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 class="w-4 h-4 text-gray-400">
+                                <path d="m6 9 6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute left-0 right-0 mt-2 py-1 bg-[#272c31] rounded-md shadow-lg overflow-hidden z-10 border border-gray-600">
+                            <button type="button"
+                                    @click="selectedValue = 'system_default'; selectedLabel = 'System default (locale) — Aug 12, 2025 / 12 Aug 2025'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                System default (locale) — Aug 12, 2025 / 12 Aug 2025
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'iso_8601'; selectedLabel = 'ISO 8601 — 2025-08-12'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                ISO 8601 — 2025-08-12
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'month_d_yyyy'; selectedLabel = 'Month D, YYYY — Aug 12, 2025'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                Month D, YYYY — Aug 12, 2025
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'd_mon_yyyy'; selectedLabel = 'D Mon YYYY — 12 Aug 2025'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                D Mon YYYY — 12 Aug 2025
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'm_d_yyyy'; selectedLabel = 'M/D/YYYY — 08/12/2025'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                M/D/YYYY — 08/12/2025
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'd_m_yyyy'; selectedLabel = 'D/M/YYYY — 12/08/2025'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                D/M/YYYY — 12/08/2025
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'dd_mm_yyyy'; selectedLabel = 'DD.MM.YYYY — 12.08.2025'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                DD.MM.YYYY — 12.08.2025
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'yyyy_mm_dd'; selectedLabel = 'YYYY/MM/DD — 2025/08/12'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                YYYY/MM/DD — 2025/08/12
+                            </button>
+                        </div>
+                        <input type="hidden" name="date_format" x-bind:value="selectedValue">
+                    </div>
+                </div>
+
+                <!-- Time Format -->
+                <div class="p-3 bg-[#39404b] rounded-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-gray-200 text-sm font-medium">Time Format</label>
+                        <span class="text-gray-400 text-xs">Choose how times are displayed throughout the application.</span>
+                    </div>
+                    <div class="relative"
+                         x-data="{ open: false, selectedValue: '{{ user.time_format }}', selectedLabel: '{{ user.time_format|time_format_display }}' }">
+                        <button type="button"
+                                @click="open = !open"
+                                @click.outside="open = false"
+                                class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer">
+                            <span x-text="selectedLabel"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 width="24"
+                                 height="24"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 class="w-4 h-4 text-gray-400">
+                                <path d="m6 9 6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute left-0 right-0 mt-2 py-1 bg-[#272c31] rounded-md shadow-lg overflow-hidden z-10 border border-gray-600">
+                            <button type="button"
+                                    @click="selectedValue = 'system_default'; selectedLabel = 'System default (locale) — 6:45 PM / 18:45'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                System default (locale) — 6:45 PM / 18:45
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'h_mm_ampm'; selectedLabel = '12-hour (h:mm AM/PM) — 6:45 PM'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                12-hour (h:mm AM/PM) — 6:45 PM
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'hh_mm_ampm'; selectedLabel = '12-hour, leading zero (hh:mm AM/PM) — 06:45 PM'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                12-hour, leading zero (hh:mm AM/PM) — 06:45 PM
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'hh_mm'; selectedLabel = '24-hour (HH:mm) — 18:45'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                24-hour (HH:mm) — 18:45
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'hh_mm_ss'; selectedLabel = '24-hour with seconds (HH:mm:ss) — 18:45:00'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                24-hour with seconds (HH:mm:ss) — 18:45:00
+                            </button>
+                        </div>
+                        <input type="hidden" name="time_format" x-bind:value="selectedValue">
+                    </div>
+                </div>
+
+                <!-- Game Logging Style -->
+                <div class="p-3 bg-[#39404b] rounded-md mt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-gray-200 text-sm font-medium">Game &amp; Board Game Logging Style</label>
+                        <span class="text-gray-400 text-xs">Choose how game and board game entries are displayed on the History page.</span>
+                    </div>
+                    <div class="relative"
+                         x-data="{ open: false, selectedValue: '{{ user.game_logging_style|default:'repeats' }}', selectedLabel: '{{ user.game_logging_style|default:'repeats' }}' }">
+                        <button type="button"
+                                @click="open = !open"
+                                @click.outside="open = false"
+                                class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer">
+                            <span x-text="selectedValue === 'sessions' ? 'Sessions — new entry per play; exact history' : 'Repeats — update one entry; spreads time across range'"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                 width="24"
+                                 height="24"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 class="w-4 h-4 text-gray-400">
+                                <path d="m6 9 6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute left-0 right-0 mt-2 py-1 bg-[#272c31] rounded-md shadow-lg overflow-hidden z-10 border border-gray-600">
+                            <button type="button"
+                                    @click="selectedValue = 'sessions'; selectedLabel = 'sessions'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                Sessions — new entry per play; exact history
+                            </button>
+                            <button type="button"
+                                    @click="selectedValue = 'repeats'; selectedLabel = 'repeats'; open = false"
+                                    class="block w-full px-3 py-2 text-left text-sm transition-colors text-gray-300 hover:bg-[#39404b] hover:text-white">
+                                Repeats — update one entry; spreads time across range
+                            </button>
+                        </div>
+                        <input type="hidden" name="game_logging_style" x-bind:value="selectedValue">
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-600 my-5"></div>
+
+            <!-- Library Management Section -->
+            <div class="mb-6"
+                 x-data="{ enabled: {{ auto_pause_enabled|yesno:'true,false' }}, rules: JSON.parse('{{ auto_pause_rules_json|escapejs }}') || [], defaultLibrary: 'all', libraryLabels: JSON.parse('{{ library_labels_json|escapejs }}'), init() { this.enabled = this.rules.length > 0; }, addRule() { const library = this.defaultLibrary || 'all'; this.rules.push({ library, weeks: 16 }); this.enabled = this.rules.length > 0; }, removeRule(index) { this.rules.splice(index, 1); this.enabled = this.rules.length > 0; }, primaryButtonLabel() { return this.rules.length ? 'Enabled. Click to add additional rule.' : 'Disabled. Click to add rule.'; }, handlePrimaryAction() { this.addRule(); } }">
+                <div class="p-4 bg-[#39404b] rounded-md border border-gray-700">
+                    <div class="flex items-start justify-between mb-3 space-x-4">
+                        <label class="text-gray-200 text-sm font-medium">Library Management</label>
+                        <span class="text-gray-400 text-xs text-right">Change “In Progress” items to "Paused" after a set time.</span>
+                    </div>
+
+                    <button type="button"
+                            @click="handlePrimaryAction"
+                            class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer">
+                        <span x-text="primaryButtonLabel()"></span>
                         <svg xmlns="http://www.w3.org/2000/svg"
                              width="24"
                              height="24"
@@ -354,75 +302,109 @@
                              stroke-width="2"
                              stroke-linecap="round"
                              stroke-linejoin="round"
-                             class="w-4 h-4 text-gray-400 pointer-events-none">
-                          <path d="m6 9 6 6 6-6"></path>
+                             class="w-4 h-4 text-gray-400">
+                            <path d="m6 9 6 6 6-6"></path>
                         </svg>
-                      </button>
-                      <select class="absolute inset-0 opacity-0"
-                              x-ref="librarySelect"
-                              x-model="rule.library"
-                              @change="hasValue = !!rule.library">
-                        <option value="all">All Libraries</option>
-                        {% for media_type in active_libraries %}
-                          <option value="{{ media_type }}">{{ media_type|media_type_readable_plural }}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                  </div>
-                  <div class="md:w-40">
-                    <div class="relative">
-                      <input type="number"
-                             min="1"
-                             class="w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-10 appearance-none"
-                             x-model.number="rule.weeks"
-                             style="-moz-appearance: textfield;">
-                      <style>
+                    </button>
+
+                    <input type="hidden" name="auto_pause_enabled" :value="enabled ? 1 : 0">
+
+                    <div x-show="enabled" x-cloak class="mt-4">
+                        <input type="hidden"
+                               name="auto_pause_rules"
+                               x-bind:value="JSON.stringify(rules)">
+
+                        <template x-if="!rules.length">
+                            <p class="text-sm text-gray-400 italic">No auto-pause rules yet. Add one to get started.</p>
+                        </template>
+
+                        <div class="space-y-3 mt-3">
+                            <template x-for="(rule, index) in rules" :key="`auto-pause-${index}`">
+                                <div class="flex flex-col md:flex-row md:items-center gap-3 bg-[#2f353f] rounded-md border border-gray-700 p-0 md:p-0">
+                                    <div class="flex-1"
+                                         x-data="{ hasValue: !!rule.library }"
+                                         x-init="$watch('rule.library', value => hasValue = !!value)">
+                                        <div class="relative">
+                                            <button type="button"
+                                                    class="flex items-center justify-between w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer"
+                                                    @click="$refs.librarySelect.focus()">
+                                                <span x-text="libraryLabels[rule.library] || 'All Libraries'"></span>
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                     width="24"
+                                                     height="24"
+                                                     viewBox="0 0 24 24"
+                                                     fill="none"
+                                                     stroke="currentColor"
+                                                     stroke-width="2"
+                                                     stroke-linecap="round"
+                                                     stroke-linejoin="round"
+                                                     class="w-4 h-4 text-gray-400 pointer-events-none">
+                                                    <path d="m6 9 6 6 6-6"></path>
+                                                </svg>
+                                            </button>
+                                            <select class="absolute inset-0 opacity-0"
+                                                    x-ref="librarySelect"
+                                                    x-model="rule.library"
+                                                    @change="hasValue = !!rule.library">
+                                                <option value="all">All Libraries</option>
+                                                {% for media_type in active_libraries %}
+                                                    <option value="{{ media_type }}">{{ media_type|media_type_readable_plural }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="md:w-40">
+                                        <div class="relative">
+                                            <input type="number"
+                                                   min="1"
+                                                   class="w-full px-3 py-2 bg-[#272c31] border border-gray-600 rounded-md text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent pr-10 appearance-none"
+                                                   x-model.number="rule.weeks"
+                                                   style="-moz-appearance: textfield">
+                                            <style>
                         input[type=number]::-webkit-inner-spin-button,
                         input[type=number]::-webkit-outer-spin-button {
                           -webkit-appearance: none;
                           margin: 0;
                         }
-                      </style>
-                      <span class="absolute inset-y-0 right-3 flex items-center text-gray-400 text-xs">weeks</span>
+                                            </style>
+                                            <span class="absolute inset-y-0 right-3 flex items-center text-gray-400 text-xs">weeks</span>
+                                        </div>
+                                    </div>
+                                    <div class="md:w-32">
+                                        <button type="button"
+                                                class="w-full h-10 px-4 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+                                                @click="removeRule(index)">Remove</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
-                  </div>
-                  <div class="md:w-32">
-                    <button type="button"
-                            class="w-full h-10 px-4 text-sm text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
-                            @click="removeRule(index)">
-                      Remove
-                    </button>
-                  </div>
                 </div>
-              </template>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div class="border-t border-gray-600 my-5"></div>
+            <div class="border-t border-gray-600 my-5"></div>
 
-      <!-- Save Button -->
-      <div class="mt-5 pt-4 border-gray-600">
-        <button type="submit"
-                class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg"
-               width="24"
-               height="24"
-               viewBox="0 0 24 24"
-               fill="none"
-               stroke="currentColor"
-               stroke-width="2"
-               stroke-linecap="round"
-               stroke-linejoin="round"
-               class="w-4 h-4 mr-2">
-            <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 0 2 2H5a2 2 0 0 0-2-2V5a2 2 0 0 1 2-2z"></path>
-            <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path>
-            <path d="M7 3v4a1 1 0 0 0 1 1h7"></path>
-          </svg>
-          Save Preferences
-        </button>
-      </div>
-    </form>
-  </div>
+            <!-- Save Button -->
+            <div class="mt-5 pt-4 border-gray-600">
+                <button type="submit"
+                        class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         width="24"
+                         height="24"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round"
+                         class="w-4 h-4 mr-2">
+                        <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 0 2 2H5a2 2 0 0 0-2-2V5a2 2 0 0 1 2-2z"></path>
+                        <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path>
+                        <path d="M7 3v4a1 1 0 0 0 1 1h7"></path>
+                    </svg>
+                    Save Preferences
+                </button>
+            </div>
+        </form>
+    </div>
 {% endblock settings_content %}

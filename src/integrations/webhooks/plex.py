@@ -106,7 +106,7 @@ class PlexWebhookProcessor(BaseWebhookProcessor):
         if media_type == MediaTypes.TV.value:
             # Extract season/episode from Plex payload
             season_number, episode_number = self._extract_season_episode_from_payload(
-                payload
+                payload,
             )
             self._process_tv(payload, user, ids, season_number, episode_number)
         elif media_type == MediaTypes.MOVIE.value:
@@ -182,12 +182,12 @@ class PlexWebhookProcessor(BaseWebhookProcessor):
         metadata = payload.get("Metadata", {})
         season_number = metadata.get("parentIndex")
         episode_number = metadata.get("index")
-        
+
         # Convert to int if they exist
         try:
             season_number = int(season_number) if season_number is not None else None
             episode_number = int(episode_number) if episode_number is not None else None
         except (ValueError, TypeError):
             return None, None
-        
+
         return season_number, episode_number

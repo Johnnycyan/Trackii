@@ -1,6 +1,5 @@
 import logging
 from collections import defaultdict
-from datetime import datetime
 
 from django.apps import apps
 from django.conf import settings
@@ -213,7 +212,7 @@ class Item(CalendarTriggerMixin, models.Model):
                 if tv_metadata.get("details", {}).get("runtime"):
                     from app.statistics import parse_runtime_to_minutes
                     runtime_minutes = parse_runtime_to_minutes(tv_metadata["details"]["runtime"])
-                
+
                 tv_item = Item.objects.create(
                     media_id=self.media_id,
                     source=self.source,
@@ -259,21 +258,21 @@ class MediaManager(models.Manager):
         """Get a media list by type with filtering and sorting."""
         model = apps.get_model(app_label="app", model_name=media_type)
         direction = self.resolve_direction(sort_filter, direction)
-        
+
         # Build base queryset
         queryset = model.objects.filter(user=user.id)
-        
+
         # Apply status filter
         if status_filter != users.models.MediaStatusChoices.ALL:
             queryset = queryset.filter(status=status_filter)
-        
+
         # Apply search filter
         if search:
             queryset = queryset.filter(
                 models.Q(item__title__icontains=search)
-                | models.Q(item__media_id__icontains=search)
+                | models.Q(item__media_id__icontains=search),
             )
-        
+
         # Handle duplicate entries by selecting the most recent record for each item
         has_progress_field = any(
             getattr(field, "attname", "") == "progress"
@@ -309,14 +308,14 @@ class MediaManager(models.Manager):
 
         queryset = queryset.select_related("item")
         queryset = self._apply_prefetch_related(queryset, media_type)
-        
+
         # Aggregate data from duplicate entries FIRST
         queryset = self._aggregate_duplicate_data(queryset, user, media_type)
-        
+
         # Apply sorting AFTER aggregation
         if sort_filter:
             queryset = self._sort_media_list(queryset, sort_filter, media_type, direction)
-        
+
         return queryset
 
     def _aggregate_duplicate_data(self, queryset, user, media_type):
@@ -324,7 +323,7 @@ class MediaManager(models.Manager):
         # Get all media entries for the user to aggregate data
         model = apps.get_model(app_label="app", model_name=media_type)
         all_media = model.objects.filter(user=user.id).select_related("item")
-        
+
         # Group media by item_id
         media_by_item = {}
         for media in all_media:
@@ -332,49 +331,49 @@ class MediaManager(models.Manager):
             if item_id not in media_by_item:
                 media_by_item[item_id] = []
             media_by_item[item_id].append(media)
-        
+
         # Aggregate data for each item in the queryset
         for media in queryset:
             item_id = media.item.id
             if item_id in media_by_item and len(media_by_item[item_id]) > 1:
                 # Aggregate data from all duplicates
                 self._aggregate_item_data(media, media_by_item[item_id])
-        
+
         return queryset
 
     def _aggregate_item_data(self, display_media, all_media_entries):
         """Aggregate data from multiple media entries for the same item."""
         # Sort by created_at to get chronological order
         sorted_entries = sorted(all_media_entries, key=lambda x: x.created_at)
-        
+
         # Aggregate progress (sum all progress values)
         total_progress = sum(entry.progress for entry in all_media_entries)
         display_media.aggregated_progress = total_progress
-        
+
         # Aggregate start date (earliest start date)
         start_dates = [entry.start_date for entry in all_media_entries if entry.start_date]
         if start_dates:
             display_media.aggregated_start_date = min(start_dates)
         else:
             display_media.aggregated_start_date = None
-        
+
         # Aggregate end date (latest end date)
         end_dates = [entry.end_date for entry in all_media_entries if entry.end_date]
         if end_dates:
             display_media.aggregated_end_date = max(end_dates)
         else:
             display_media.aggregated_end_date = None
-        
+
         # Aggregate status (most recent status)
         display_media.aggregated_status = display_media.status  # Already the most recent due to row_number=1
-        
+
         # Aggregate rating (find the most recent rating among all entries)
         # Since created_at only represents when the entry was first created,
         # we need to use a different approach to find the most recent rating
         # We'll prioritize entries with more recent activity (end_date, progressed_at)
         latest_rating = None
         latest_activity = None
-        
+
         for entry in all_media_entries:
             if entry.score is not None:
                 # Determine the most recent activity for this entry
@@ -385,17 +384,17 @@ class MediaManager(models.Manager):
                     entry_activity = entry.progressed_at
                 else:
                     entry_activity = entry.created_at
-                
+
                 # If this entry has more recent activity, use its rating
                 if latest_activity is None or entry_activity > latest_activity:
                     latest_activity = entry_activity
                     latest_rating = entry.score
-        
+
         if latest_rating is not None:
             display_media.aggregated_score = latest_rating
         else:
             display_media.aggregated_score = None
-        
+
         # Store the number of repeats for display
         display_media.repeats = len(all_media_entries)
 
@@ -548,10 +547,10 @@ class MediaManager(models.Manager):
             media_list = list(queryset)
             return sorted(
                 media_list,
-                key=lambda x: (getattr(x, 'aggregated_progress', x.progress), x.item.title.lower()),
+                key=lambda x: (getattr(x, "aggregated_progress", x.progress), x.item.title.lower()),
                 reverse=(direction == "desc"),
             )
-        
+
         # Handle sorting by date fields with special null handling
         if sort_filter in ("start_date", "end_date"):
             order = (
@@ -605,7 +604,7 @@ class MediaManager(models.Manager):
             # Annotate with max_progress and next_event
             self.annotate_max_progress(media_list, media_type)
             self._annotate_next_event(media_list)
-            
+
             # Fix missing season images
             if media_type == MediaTypes.SEASON.value:
                 self._fix_missing_season_images(media_list)
@@ -655,11 +654,11 @@ class MediaManager(models.Manager):
             )
 
             media.next_event = future_events[0] if future_events else None
-    
+
     def _fix_missing_season_images(self, season_list):
         """Backfill missing season poster images from metadata."""
         from django.conf import settings
-        
+
         items_to_update = []
         for season in season_list:
             if season.item.image == settings.IMG_NONE:
@@ -675,9 +674,9 @@ class MediaManager(models.Manager):
                         items_to_update.append(season.item)
                 except Exception as e:
                     logger.warning(
-                        f"Failed to fetch image for {season}: {e}"
+                        f"Failed to fetch image for {season}: {e}",
                     )
-        
+
         if items_to_update:
             Item.objects.bulk_update(items_to_update, ["image"])
             logger.info(f"Updated {len(items_to_update)} season poster(s)")
@@ -1076,9 +1075,9 @@ class Media(models.Model):
     @property
     def formatted_aggregated_progress(self):
         """Return formatted aggregated progress string."""
-        if hasattr(self, 'aggregated_progress') and self.aggregated_progress is not None:
+        if hasattr(self, "aggregated_progress") and self.aggregated_progress is not None:
             # Format based on media type
-            if hasattr(self, 'item') and self.item.media_type == MediaTypes.GAME.value:
+            if hasattr(self, "item") and self.item.media_type == MediaTypes.GAME.value:
                 return app.helpers.minutes_to_hhmm(self.aggregated_progress)
             return str(self.aggregated_progress)
         return str(self.progress)
@@ -1086,32 +1085,32 @@ class Media(models.Model):
     @property
     def episodes_left(self):
         """Return the number of episodes left to watch."""
-        if not hasattr(self, 'max_progress') or self.max_progress is None:
+        if not hasattr(self, "max_progress") or self.max_progress is None:
             return 0
         return max(0, self.max_progress - self.progress)
 
     @property
     def time_left(self):
         """Return the estimated time left to complete the show in minutes."""
-        if not hasattr(self, 'max_progress') or self.max_progress is None:
+        if not hasattr(self, "max_progress") or self.max_progress is None:
             return 0
-        
+
         episodes_left = self.episodes_left
         if episodes_left <= 0:
             return 0
-        
+
         # Try to get runtime from cached data using the same approach as statistics
         runtime_minutes = None
-        
+
         # First, try to get from TV show runtime (like statistics does)
-        if hasattr(self, 'item') and self.item.runtime_minutes:
+        if hasattr(self, "item") and self.item.runtime_minutes:
             runtime_minutes = self.item.runtime_minutes
         else:
             # Try to get from season cache
             from django.core.cache import cache
             season_cache_key = f"tmdb_season_{self.item.media_id}_1"
             cached_season_data = cache.get(season_cache_key)
-            
+
             if cached_season_data and cached_season_data.get("details", {}).get("runtime"):
                 from app.statistics import parse_runtime_to_minutes
                 runtime_str = cached_season_data["details"]["runtime"]
@@ -1126,7 +1125,7 @@ class Media(models.Model):
                         runtime_str = cached_season_data["details"]["runtime"]
                         runtime_minutes = parse_runtime_to_minutes(runtime_str)
                         break
-        
+
         # If we still don't have runtime, use fallback values
         if runtime_minutes is None:
             if self.item.source == "tmdb":
@@ -1135,11 +1134,11 @@ class Media(models.Model):
                 runtime_minutes = 23  # MAL default
             else:
                 runtime_minutes = 30  # Generic default
-        
+
         # Skip shows with unrealistic runtime (999999 fallback)
         if runtime_minutes >= 999999:
             return 0  # Don't count these episodes
-        
+
         return episodes_left * runtime_minutes
 
     @property
@@ -1148,17 +1147,15 @@ class Media(models.Model):
         time_left_minutes = self.time_left
         if time_left_minutes <= 0:
             return "0m"
-        
+
         hours = time_left_minutes // 60
         minutes = time_left_minutes % 60
-        
+
         if hours > 0:
             if minutes > 0:
                 return f"{hours}h {minutes}m"
-            else:
-                return f"{hours}h"
-        else:
-            return f"{minutes}m"
+            return f"{hours}h"
+        return f"{minutes}m"
 
     def increase_progress(self):
         """Increase the progress of the media by one."""
@@ -1812,9 +1809,9 @@ class Season(Media):
                     image = episode["image"]
                 else:
                     image = settings.IMG_NONE
-                
+
                 # Extract runtime from episode metadata
-                if "runtime" in episode and episode["runtime"]:
+                if episode.get("runtime"):
                     from app.statistics import parse_runtime_to_minutes
                     runtime_minutes = parse_runtime_to_minutes(episode["runtime"])
                 break
@@ -1831,7 +1828,7 @@ class Season(Media):
                 "runtime_minutes": runtime_minutes,
             },
         )
-        
+
         # Update runtime if it's not set and we have it now
         if not created and not item.runtime_minutes and runtime_minutes:
             item.runtime_minutes = runtime_minutes

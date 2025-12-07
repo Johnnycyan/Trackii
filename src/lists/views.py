@@ -159,7 +159,7 @@ def list_detail(request, list_id):
         ],
         "media_type": ["media_type"],
         "rating": [
-            "-customlistitem__date_added"
+            "-customlistitem__date_added",
         ],  # Will be overridden below for rating sort
     }
 
@@ -168,7 +168,7 @@ def list_detail(request, list_id):
     if params["sort_by"] == "rating" and user and can_edit:
         # Get all items without pagination first
         all_items = items.order_by(
-            *sort_mapping.get(params["sort_by"], ["-customlistitem__date_added"])
+            *sort_mapping.get(params["sort_by"], ["-customlistitem__date_added"]),
         )
 
         # Get all media objects for rating sort
@@ -594,7 +594,7 @@ def submit_recommendation(request, list_id):
 
     logger.info("Recommendation created: %s for %s", item.title, custom_list.name)
     messages.success(
-        request, f'Your recommendation for "{item.title}" has been submitted!'
+        request, f'Your recommendation for "{item.title}" has been submitted!',
     )
 
     return redirect("recommend_item", list_id=list_id)

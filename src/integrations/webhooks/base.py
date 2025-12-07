@@ -86,12 +86,12 @@ class BaseWebhookProcessor:
         # If we still don't have season/episode, try to get from payload
         if season_number is None or episode_number is None:
             season_number, episode_number = self._extract_season_episode_from_payload(
-                payload
+                payload,
             )
 
         if season_number is None or episode_number is None:
             logger.warning(
-                "Could not determine season/episode numbers for TMDB ID: %s", media_id
+                "Could not determine season/episode numbers for TMDB ID: %s", media_id,
             )
             return
 
@@ -113,7 +113,7 @@ class BaseWebhookProcessor:
                 alt_ids = dict(ids)
                 alt_ids["tmdb_id"] = None
                 fallback_media_id, alt_season, alt_episode = self._find_tv_media_id(
-                    alt_ids
+                    alt_ids,
                 )
 
                 if fallback_media_id:
@@ -247,7 +247,7 @@ class BaseWebhookProcessor:
                         result.get("episode_number"),
                     )
                 # Fall back to show-level results if episode-level not available
-                elif response.get("tv_results"):
+                if response.get("tv_results"):
                     result = response["tv_results"][0]
                     # Return show ID only, season/episode should come from payload
                     return result.get("id"), None, None

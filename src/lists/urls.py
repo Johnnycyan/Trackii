@@ -26,7 +26,7 @@ urlpatterns = [
     path("list_item_toggle", views.list_item_toggle, name="list_item_toggle"),
     # Recommendation URLs
     path(
-        "list/<int:list_id>/recommend", views.recommend_item_page, name="recommend_item"
+        "list/<int:list_id>/recommend", views.recommend_item_page, name="recommend_item",
     ),
     path(
         "list/<int:list_id>/recommend/search",

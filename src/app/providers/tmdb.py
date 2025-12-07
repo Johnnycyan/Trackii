@@ -466,17 +466,18 @@ def get_start_date(date):
     # e.g movie: 445290
     if date == "" or not date:
         return None
-    
+
     try:
-        from django.utils import timezone
         from datetime import datetime
-        
+
+        from django.utils import timezone
+
         # TMDB returns dates in YYYY-MM-DD format
         if isinstance(date, str):
             # Parse the date string and convert to timezone-aware datetime
             date_obj = datetime.strptime(date, "%Y-%m-%d")
             return timezone.make_aware(date_obj, timezone.get_current_timezone())
-        
+
         return date
     except (ValueError, TypeError):
         # If parsing fails, return the original value
@@ -489,16 +490,17 @@ def get_end_date(response):
         last_episode_date = response["episodes"][-1]["air_date"]
         if last_episode_date:
             try:
-                from django.utils import timezone
                 from datetime import datetime
-                
+
+                from django.utils import timezone
+
                 # TMDB returns dates in YYYY-MM-DD format
                 date_obj = datetime.strptime(last_episode_date, "%Y-%m-%d")
                 return timezone.make_aware(date_obj, timezone.get_current_timezone())
             except (ValueError, TypeError):
                 # If parsing fails, return the original value
                 return last_episode_date
-        
+
         return last_episode_date
 
     return None
@@ -644,14 +646,15 @@ def process_episodes(season_metadata, episodes_in_db):
 
     for episode in season_metadata["episodes"]:
         episode_number = episode["episode_number"]
-        
+
         # Convert air_date to datetime object if it's a string
         air_date = episode["air_date"]
         if air_date and isinstance(air_date, str):
             try:
-                from django.utils import timezone
                 from datetime import datetime
-                
+
+                from django.utils import timezone
+
                 # TMDB returns dates in YYYY-MM-DD format
                 date_obj = datetime.strptime(air_date, "%Y-%m-%d")
                 air_date = timezone.make_aware(date_obj, timezone.get_current_timezone())
