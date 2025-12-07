@@ -515,26 +515,29 @@ def recommend_search(request, list_id):
 
     # Use the existing search service
     from app import config
+    from app.models import Item
 
     source = config.get_default_source_name(media_type).value
     data = services.search(media_type, query, page, source)
 
-    # Get items already in the list or already recommended
-    existing_item_ids = set(custom_list.items.values_list("id", flat=True))
-    recommended_item_ids = set(
-        ListRecommendation.objects.filter(custom_list=custom_list).values_list(
-            "item_id",
-            flat=True,
-        ),
+    # Get items already in the list (by media_id and source)
+    existing_items = set(
+        custom_list.items.values_list("media_id", "source"),
+    )
+
+    # Get items already recommended (by media_id and source)
+    recommended_items = set(
+        ListRecommendation.objects.filter(
+            custom_list=custom_list,
+        ).values_list("item__media_id", "item__source"),
     )
 
     # Mark results that are already in the list or recommended
     results = data.get("results", [])
     for result in results:
-        item = result.get("item")
-        if item:
-            result["already_in_list"] = item.id in existing_item_ids
-            result["already_recommended"] = item.id in recommended_item_ids
+        key = (str(result["media_id"]), result["source"])
+        result["already_in_list"] = key in existing_items
+        result["already_recommended"] = key in recommended_items
 
     context = {
         "results": results,

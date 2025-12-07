@@ -5,13 +5,13 @@
   <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
     {% for result in results %}
       <div class="bg-[#39404b] rounded-lg overflow-hidden shadow-lg relative cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all"
-           hx-get="{% url 'recommend_search' custom_list.id %}?show_preview=true&media_id={{ result.item.media_id }}&media_type={{ result.item.media_type }}&source={{ result.item.source }}&title={{ result.item.title|urlencode }}&image={{ result.item.image|urlencode }}{% if result.item.release_datetime %}&year={{ result.item.release_datetime|date:'Y' }}{% endif %}"
+           hx-get="{% url 'recommend_search' custom_list.id %}?show_preview=true&media_id={{ result.media_id }}&media_type={{ result.media_type }}&source={{ result.source }}&title={{ result.title|urlencode }}&image={{ result.image|urlencode }}"
            hx-target="#recommend-modal-container"
            hx-swap="innerHTML">
         <div class="relative">
-          <img alt="{{ result.item.title }}"
+          <img alt="{{ result.title }}"
                class="w-full aspect-[2/3] bg-[#3e454d] object-cover"
-               src="{{ result.item.image }}"
+               src="{{ result.image }}"
                loading="lazy">
           
           {% if result.already_in_list %}
@@ -25,10 +25,9 @@
           {% endif %}
         </div>
         <div class="p-3">
-          <h3 class="font-medium text-white line-clamp-2 text-sm leading-tight">{{ result.item.title }}</h3>
+          <h3 class="font-medium text-white line-clamp-2 text-sm leading-tight">{{ result.title }}</h3>
           <p class="text-xs text-gray-400 mt-1">
-            {{ result.item.media_type|media_type_readable }}
-            {% if result.item.release_datetime %} • {{ result.item.release_datetime|date:"Y" }}{% endif %}
+            {{ result.media_type|media_type_readable }}
           </p>
         </div>
       </div>
