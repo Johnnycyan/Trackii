@@ -22,32 +22,32 @@
       {% for field in form %}
         <div>
           {% if field.name == 'is_public' %}
-            <div class="flex items-center justify-between">
-              <div>
-                <label class="block text-sm font-medium text-gray-300">{{ field.label }}</label>
-                <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+            <div class="flex items-center justify-between p-3 bg-[#39404b] rounded-md">
+              <div class="flex-1">
+                <div class="flex items-center text-gray-200 mb-1">
+                  {% include "app/icons/globe.svg" with classes="w-5 h-5 mr-2" %}
+                  <span class="text-sm font-medium">{{ field.label }}</span>
+                </div>
+                <p class="text-xs text-gray-400 ml-7">{{ field.help_text }}</p>
               </div>
-              <button type="button" role="switch" :aria-checked="isPublic" @click="isPublic = !isPublic"
-                      class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-                      :class="isPublic ? 'bg-indigo-600' : 'bg-gray-600'">
-                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                      :class="isPublic ? 'translate-x-5' : 'translate-x-0'"></span>
-              </button>
-              <input type="hidden" name="{{ field.name }}" :value="isPublic ? 'on' : ''">
+              <label class="relative inline-flex items-center cursor-pointer ml-4">
+                <input class="sr-only peer" type="checkbox" name="{{ field.name }}" x-model="isPublic" {% if form.instance.is_public %}checked{% endif %}>
+                <div class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-px after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
             </div>
           {% elif field.name == 'allow_recommendations' %}
-            <div class="flex items-center justify-between" :class="{ 'opacity-50': !isPublic }">
-              <div>
-                <label class="block text-sm font-medium text-gray-300">{{ field.label }}</label>
-                <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+            <div class="flex items-center justify-between p-3 bg-[#39404b] rounded-md" :class="{ 'opacity-50': !isPublic }">
+              <div class="flex-1">
+                <div class="flex items-center text-gray-200 mb-1">
+                  {% include "app/icons/bell.svg" with classes="w-5 h-5 mr-2" %}
+                  <span class="text-sm font-medium">{{ field.label }}</span>
+                </div>
+                <p class="text-xs text-gray-400 ml-7">{{ field.help_text }}</p>
               </div>
-              <button type="button" role="switch" x-data="{ checked: {{ form.instance.allow_recommendations|yesno:'true,false' }} }" :aria-checked="checked" @click="if(isPublic) checked = !checked"
-                      class="relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-                      :class="[checked && isPublic ? 'bg-indigo-600' : 'bg-gray-600', isPublic ? 'cursor-pointer' : 'cursor-not-allowed']">
-                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                      :class="checked && isPublic ? 'translate-x-5' : 'translate-x-0'"></span>
-                <input type="hidden" name="{{ field.name }}" :value="checked && isPublic ? 'on' : ''">
-              </button>
+              <label class="relative inline-flex items-center ml-4" :class="isPublic ? 'cursor-pointer' : 'cursor-not-allowed'">
+                <input class="sr-only peer" type="checkbox" name="{{ field.name }}" :disabled="!isPublic" {% if form.instance.allow_recommendations %}checked{% endif %}>
+                <div class="w-9 h-5 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-px after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-indigo-600"></div>
+              </label>
             </div>
           {% elif field.name != 'collaborators' %}
             <label class="block text text-sm font-medium mb-2 text-gray-300">{{ field.label }}</label>
