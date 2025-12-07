@@ -16,12 +16,6 @@
     <div>
       <div class="flex items-center gap-3 mb-2">
         <h1 class="text-3xl font-bold">{{ custom_list.name }}</h1>
-        {% if custom_list.is_public %}
-          <span class="px-2 py-1 text-xs font-medium bg-green-600/20 text-green-400 rounded-md flex items-center gap-1">
-            {% include "app/icons/globe.svg" with classes="w-3 h-3" %}
-            Public
-          </span>
-        {% endif %}
       </div>
       {% if custom_list.description %}<p class="text-gray-400 mb-2">{{ custom_list.description }}</p>{% endif %}
       <div class="flex items-center gap-4">
@@ -37,6 +31,13 @@
             <span class="mx-2">•</span>
             {{ items_count }} item{{ items_count|pluralize }}
           </span>
+          {% if custom_list.is_public %}
+            <span class="mx-2">•</span>
+            <span class="text-xs font-medium bg-green-600/20 text-green-400 rounded-md flex items-center gap-1">
+              {% include "app/icons/globe.svg" with classes="w-3 h-3" %}
+              Public
+            </span>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -189,7 +190,7 @@
           {% elif custom_list.can_recommend %}
             <p class="text-gray-400 mb-6">Be the first to recommend something!</p>
             <div class="pt-4">
-              <a href="{% url 'recommend_item' custom_list.id %}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">Recommend Item</a>
+              <a href="{% url 'recommend_item' custom_list.id %}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors">Recommend Item</a>
             </div>
           {% else %}
             <p class="text-gray-400">This list is empty</p>

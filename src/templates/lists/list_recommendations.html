@@ -45,7 +45,7 @@
                                       action="{% url 'approve_recommendation' custom_list.id rec.id %}?next={% url 'list_recommendations' custom_list.id %}">
                                     {% csrf_token %}
                                     <button type="submit"
-                                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors cursor-pointer text-sm flex items-center gap-2">
+                                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors cursor-pointer text-sm flex items-center gap-2">
                                         {% include "app/icons/checkmark.svg" with classes="w-4 h-4" %}
                                         Approve & Add
                                     </button>
