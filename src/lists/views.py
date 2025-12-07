@@ -448,6 +448,9 @@ def recommend_item_page(request, list_id):
         "media_types": enabled_media_types,
         "is_authenticated": request.user.is_authenticated,
         "public_view": not request.user.is_authenticated,
+        "base_template": "base_public.html"
+        if not request.user.is_authenticated
+        else "base.html",
     }
 
     return render(request, "lists/recommend_item.html", context)
