@@ -28,7 +28,13 @@
          }">
       
       {# Search Bar - matching the main search bar style #}
-      <form id="recommend-search-form" class="mb-6">
+      <form id="recommend-search-form" class="mb-6"
+            hx-get="{% url 'recommend_search' custom_list.id %}"
+            hx-trigger="submit, keyup changed delay:300ms from:#recommend-search-input"
+            hx-target="#search-results"
+            hx-include="#recommend-search-form"
+            hx-indicator="#search-spinner"
+            @submit.prevent>
         <div class="flex relative">
           <div class="relative grow">
             <input type="search"
@@ -36,12 +42,8 @@
                    name="q"
                    :placeholder="getPlaceholder()"
                    class="w-full py-3 pl-10 pr-4 text-gray-300 bg-[#39404b] rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset placeholder-gray-500"
-                   hx-get="{% url 'recommend_search' custom_list.id %}"
-                   hx-trigger="keyup changed delay:400ms, search"
-                   hx-target="#search-results"
-                   hx-include="#recommend-search-form"
-                   hx-indicator="#search-spinner"
-                   autocomplete="off">
+                   autocomplete="off"
+                   @keydown.enter.prevent="$nextTick(() => htmx.trigger('#recommend-search-form', 'submit'))">
             {% include "app/icons/magnifying-glass.svg" with classes="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" %}
             <div id="search-spinner" class="htmx-indicator absolute right-4 top-1/2 transform -translate-y-1/2">
               <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500"></div>

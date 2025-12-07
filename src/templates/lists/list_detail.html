@@ -43,9 +43,9 @@
     <div class="flex items-center gap-2">
       {% if custom_list.can_recommend %}
         <a href="{% url 'recommend_item' custom_list.id %}"
-           class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md transition-colors flex items-center gap-2 text-sm cursor-pointer">
-          {% include "app/icons/plus.svg" with classes="w-4 h-4" %}
-          <span>Recommend Item</span>
+           class="px-4 py-2 bg-[#39404b] hover:bg-[#454d5a] rounded-md transition-colors flex items-center gap-2 text-sm cursor-pointer shadow-sm">
+          {% include "app/icons/plus.svg" with classes="w-4 h-4 text-gray-300" %}
+          <span class="text-gray-100">Recommend Item</span>
         </a>
       {% endif %}
       {% if can_edit %}

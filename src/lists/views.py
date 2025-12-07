@@ -472,8 +472,20 @@ def recommend_search(request, list_id):
         media_type = request.GET.get("media_type")
         source = request.GET.get("source")
 
-        # Fetch full media metadata
-        media_metadata = services.get_media_metadata(media_type, media_id, source)
+        try:
+            media_metadata = services.get_media_metadata(media_type, media_id, source)
+        except Exception as exc:
+            logger.exception(
+                "Recommendation preview failed: list_id=%s media_type=%s media_id=%s",
+                custom_list.id,
+                media_type,
+                media_id,
+                exc_info=exc,
+            )
+            return JsonResponse(
+                {"error": "Unable to load details right now. Please try again."},
+                status=502,
+            )
 
         # Check if already in list or recommended
         from app.models import Item
@@ -505,8 +517,14 @@ def recommend_search(request, list_id):
         return render(request, "lists/components/recommend_preview_modal.html", context)
 
     query = request.GET.get("q", "").strip()
-    media_type = request.GET.get("media_type", "tv")
-    page = int(request.GET.get("page", 1))
+    media_type = request.GET.get("media_type") or MediaTypes.TV.value
+    if media_type not in MediaTypes.values and media_type != "tv_with_seasons":
+        media_type = MediaTypes.TV.value
+
+    try:
+        page = int(request.GET.get("page", 1))
+    except (TypeError, ValueError):
+        page = 1
 
     if not query or len(query) < 2:
         return render(
@@ -520,7 +538,32 @@ def recommend_search(request, list_id):
     from app.models import Item
 
     source = config.get_default_source_name(media_type).value
-    data = services.search(media_type, query, page, source)
+
+    try:
+        data = services.search(media_type, query, page, source)
+    except Exception as exc:
+        logger.exception(
+            "Recommendation search failed: list_id=%s media_type=%s query=%s",
+            custom_list.id,
+            media_type,
+            query,
+            exc_info=exc,
+        )
+        context = {
+            "results": [],
+            "custom_list": custom_list,
+            "query": query,
+            "media_type": media_type,
+            "page": page,
+            "total_pages": 1,
+            "error": "Search is temporarily unavailable. Please try again.",
+        }
+        return render(
+            request,
+            "lists/components/recommend_search_results.html",
+            context,
+            status=200,
+        )
 
     # Get items already in the list (by media_id and source)
     existing_items = set(
