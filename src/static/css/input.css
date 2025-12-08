@@ -75,7 +75,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  transition: flex 0.2s ease;
+  transition: max-height 0.2s ease;
 }
 
 .search-result-card .media-card-poster {
@@ -95,8 +95,8 @@
 
 .search-result-card:hover .media-card-title,
 .search-result-card:hover .search-result-title {
-  -webkit-line-clamp: unset;
-  line-clamp: unset;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 
 .search-result-card .media-card-body {
@@ -109,17 +109,25 @@
   max-height: 0;
   opacity: 0;
   overflow: hidden;
-  transition: all 0.2s ease;
+  /* Faster transition out (0.1s) for leaving hover */
+  transition:
+    max-height 0.1s ease,
+    opacity 0.1s ease;
 }
 
-/* On hover, give less space to poster container */
+/* Dynamic shrinkage based on title lines - set via CSS custom property */
 .search-result-card:hover > div:first-child {
-  flex: 0 0 75%;
+  /* Default for 1-line title: ~1.25rem title + ~1.25rem year + ~1.5rem padding = ~4rem */
+  max-height: calc(100% - var(--body-height, 4rem));
 }
 
 .search-result-card:hover .media-card-year {
   max-height: 1.5rem;
   opacity: 1;
+  /* Slower transition in (0.2s) for hover */
+  transition:
+    max-height 0.2s ease,
+    opacity 0.2s ease;
 }
 
 @media (max-width: 768px) {

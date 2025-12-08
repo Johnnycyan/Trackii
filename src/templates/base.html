@@ -266,7 +266,7 @@
                     </div>
 
                     <main class="flex-1 relative bg-[#212529]">
-                        <div class="container mx-auto px-4 pt-6 mt-4 sm:px-8 sm:pt-12 sm:mt-6">
+                        <div class="container mx-auto px-4 py-6 mt-4 sm:px-8 sm:py-12 sm:mt-6">
                             {% block content %}
                             {% endblock content %}
                         </div>
@@ -318,6 +318,43 @@
 
         {% block js %}
         {% endblock js %}
+
+        <script>
+      // Media card hover - calculate body height based on title lines
+      function initMediaCardHover() {
+        document.querySelectorAll('.search-result-card').forEach(card => {
+          if (card.dataset.hoverInit) return;
+          card.dataset.hoverInit = 'true';
+          
+          const title = card.querySelector('.media-card-title, .search-result-title');
+          const body = card.querySelector('.media-card-body');
+          if (!title || !body) return;
+          
+          card.addEventListener('mouseenter', () => {
+            // Temporarily allow full expansion to measure
+            const originalClamp = title.style.webkitLineClamp;
+            title.style.webkitLineClamp = '3';
+            
+            // Get line height and calculate lines
+            const lineHeight = parseFloat(getComputedStyle(title).lineHeight) || 20;
+            const titleHeight = title.scrollHeight;
+            const lines = Math.min(3, Math.ceil(titleHeight / lineHeight));
+            
+            // Reset
+            title.style.webkitLineClamp = originalClamp;
+            
+            // Calculate body height: (lines * lineHeight) + year(~20px) + padding(~24px)
+            const bodyHeight = (lines * lineHeight) + 20 + 24;
+            card.style.setProperty('--body-height', bodyHeight + 'px');
+          });
+        });
+      }
+      
+      // Init on load and after HTMX swaps
+      document.addEventListener('DOMContentLoaded', initMediaCardHover);
+      document.body.addEventListener('htmx:afterSwap', initMediaCardHover);
+      document.body.addEventListener('htmx:afterSettle', initMediaCardHover);
+        </script>
 
         <script>
       if ("serviceWorker" in navigator) {
