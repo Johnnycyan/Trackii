@@ -3,8 +3,7 @@ name: Bug report
 about: Create a report to help us improve
 title: "[BUG]"
 labels: bug
-assignees: ''
-
+assignees: ""
 ---
 
 **Describe the bug**
@@ -20,7 +19,7 @@ Description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Error logs**
- If you have any error logs, paste them here:
+If you have any error logs, paste them here:
 
-**Yamtrack version**:
+**Trackii version**:
 **Database**: SQLite (default) or PostgreSQL

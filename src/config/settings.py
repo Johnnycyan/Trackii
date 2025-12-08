@@ -1,4 +1,4 @@
-"""Django settings for Yamtrack project."""
+"""Django settings for Trackii project."""
 
 import json
 import subprocess
@@ -340,7 +340,7 @@ LOGIN_REDIRECT_URL = "home"
 
 AUTH_USER_MODEL = "users.User"
 
-# Yamtrack settings
+# Trackii settings
 
 # For CSV imports
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
@@ -409,7 +409,9 @@ ADMIN_ENABLED = config("ADMIN_ENABLED", default=False, cast=bool)
 TRACK_TIME = config("TRACK_TIME", default=True, cast=bool)
 
 # Runtime population settings
-RUNTIME_POPULATION_DISABLED = config("RUNTIME_POPULATION_DISABLED", default=False, cast=bool)
+RUNTIME_POPULATION_DISABLED = config(
+    "RUNTIME_POPULATION_DISABLED", default=False, cast=bool
+)
 
 TZ = zoneinfo.ZoneInfo(TIME_ZONE)
 

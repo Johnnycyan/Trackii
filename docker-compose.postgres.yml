@@ -1,7 +1,7 @@
 services:
-  yamtrack:
-    container_name: yamtrack
-    image: ghcr.io/dannyvfilms/yamtrack
+  trackii:
+    container_name: trackii
+    image: ghcr.io/dannyvfilms/trackii
     restart: unless-stopped
     depends_on:
       - db
@@ -11,26 +11,26 @@ services:
       - SECRET=longstring
       - REDIS_URL=redis://redis:6379
       - DB_HOST=db
-      - DB_NAME=yamtrack
-      - DB_USER=yamtrack
-      - DB_PASSWORD=yamtrack
+      - DB_NAME=trackii
+      - DB_USER=trackii
+      - DB_PASSWORD=trackii
       - DB_PORT=5432
     ports:
       - "8000:8000"
 
   db:
     image: postgres:16-alpine
-    container_name: yamtrack-db
+    container_name: trackii-db
     environment:
-      - POSTGRES_DB=yamtrack
-      - POSTGRES_USER=yamtrack
-      - POSTGRES_PASSWORD=yamtrack
+      - POSTGRES_DB=trackii
+      - POSTGRES_USER=trackii
+      - POSTGRES_PASSWORD=trackii
     volumes:
       - ./db:/var/lib/postgresql/data
     restart: unless-stopped
 
   redis:
-    container_name: yamtrack-redis
+    container_name: trackii-redis
     image: redis:8-alpine
     restart: unless-stopped
     volumes:

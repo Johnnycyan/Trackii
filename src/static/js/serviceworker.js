@@ -1,4 +1,4 @@
-const CACHE_NAME = "yamtrack-v2";
+const CACHE_NAME = "trackii-v2";
 const urlsToCache = [
   "/static/css/main.css",
   "/static/favicon/android-chrome-192x192.png",

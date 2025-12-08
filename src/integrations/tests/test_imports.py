@@ -36,7 +36,7 @@ from integrations.imports import (
     mal,
     simkl,
     steam,
-    yamtrack,
+    trackii,
 )
 from integrations.imports.trakt import TraktImporter, importer
 
@@ -193,15 +193,15 @@ class ImportAniList(TestCase):
         )
 
 
-class ImportYamtrack(TestCase):
-    """Test importing media from Yamtrack CSV."""
+class ImportTrackii(TestCase):
+    """Test importing media from Trackii CSV."""
 
     def setUp(self):
         """Create user for the tests."""
         self.credentials = {"username": "test", "password": "12345"}
         self.user = get_user_model().objects.create_user(**self.credentials)
-        with Path(mock_path / "import_yamtrack.csv").open("rb") as file:
-            self.import_results = yamtrack.importer(file, self.user, "new")
+        with Path(mock_path / "import_trackii.csv").open("rb") as file:
+            self.import_results = trackii.importer(file, self.user, "new")
 
     def test_import_counts(self):
         """Test basic counts of imported media."""
@@ -274,7 +274,7 @@ class ImportYamtrack(TestCase):
             },
         ]
 
-        importer = yamtrack.YamtrackImporter(None, self.user, "new")
+        importer = trackii.TrackiiImporter(None, self.user, "new")
 
         for row in test_rows:
             # Make copies of original rows to verify they're modified
@@ -293,15 +293,15 @@ class ImportYamtrack(TestCase):
             self.assertNotEqual(row["image"], original_row["image"])
 
 
-class ImportYamtrackPartials(TestCase):
-    """Test importing yamtrack media with no ID."""
+class ImportTrackiiPartials(TestCase):
+    """Test importing trackii media with no ID."""
 
     def setUp(self):
         """Create user for the tests."""
         self.credentials = {"username": "test", "password": "12345"}
         self.user = get_user_model().objects.create_user(**self.credentials)
-        with Path(mock_path / "import_yamtrack_partials.csv").open("rb") as file:
-            self.import_results = yamtrack.importer(file, self.user, "new")
+        with Path(mock_path / "import_trackii_partials.csv").open("rb") as file:
+            self.import_results = trackii.importer(file, self.user, "new")
 
     def test_import_counts(self):
         """Test basic counts of imported media."""
@@ -1288,6 +1288,7 @@ class RetryOnLockTests(SimpleTestCase):
 
         with self.assertRaises(OperationalError):
             helpers.retry_on_lock(integrity_error)
+
 
 class ImportSteam(TestCase):
     """Test importing media from Steam."""

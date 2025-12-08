@@ -2,7 +2,7 @@
 {% load user_tags %}
 
 {% block title %}
-    Import - Yamtrack
+    Import - Trackii
 {% endblock title %}
 
 {% block settings_content %}
@@ -59,7 +59,7 @@
             </div>
             <p class="text-gray-400 mb-5 text-sm">
                 Some of these require additional configuration, check the
-                <a href="https://github.com/FuzzyGrim/Yamtrack/wiki/Media-Import-Configuration"
+                <a href="https://github.com/FuzzyGrim/Trackii/wiki/Media-Import-Configuration"
                    target="_blank"
                    class="text-indigo-400 hover:text-indigo-300 underline">import configuration guide</a>.
             </p>
@@ -243,11 +243,11 @@
                     </form>
                 </div>
 
-                {# Yamtrack #}
+                {# Trackii #}
                 <div class="bg-[#39404b] p-4 rounded-lg">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center">{% source_display "yamtrack" %}</div>
-                        <a href="https://github.com/FuzzyGrim/Yamtrack/wiki/Media-Import-Configuration#yamtrack-csv-format"
+                        <div class="flex items-center">{% source_display "trackii" %}</div>
+                        <a href="https://github.com/FuzzyGrim/Trackii/wiki/Media-Import-Configuration#trackii-csv-format"
                            target="_blank"
                            class="text-gray-400 hover:text-indigo-400 transition-colors p-1 rounded-md hover:bg-gray-600/50"
                            title="View CSV format documentation">
@@ -258,7 +258,7 @@
                        x-text="importFrequency === 'once' ? 'Import from YamTrack backup' : 'File uploads are not available for periodic imports'">
                     </p>
                     <form method="post"
-                          action="{% url 'import_yamtrack' %}"
+                          action="{% url 'import_trackii' %}"
                           enctype="multipart/form-data">
                         {% csrf_token %}
                         <input type="hidden" name="frequency" x-model="importFrequency">
@@ -267,7 +267,7 @@
                         <label class="flex items-center justify-center w-full px-4 py-2 text-sm rounded-md transition-colors"
                                :class="importFrequency === 'once' ? 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer' : 'bg-gray-600 text-gray-400 cursor-not-allowed'"
                                :disabled="importFrequency !== 'once'">
-                            <input name="yamtrack_csv"
+                            <input name="trackii_csv"
                                    accept=".csv"
                                    class="hidden"
                                    type="file"

@@ -15,7 +15,7 @@ COPY ./entrypoint.sh /entrypoint.sh
 COPY ./supervisord.conf /etc/supervisord.conf
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
-WORKDIR /yamtrack
+WORKDIR /trackii
 
 RUN apk add --no-cache nginx shadow \
     && pip install --no-cache-dir -r /requirements.txt \

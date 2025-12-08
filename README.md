@@ -1,45 +1,41 @@
-# Yamtrack
+# Trackii
 
-![App Tests](https://github.com/FuzzyGrim/Yamtrack/actions/workflows/app-tests.yml/badge.svg)
-![Docker Image](https://github.com/FuzzyGrim/Yamtrack/actions/workflows/docker-image.yml/badge.svg)
-![CodeFactor](https://www.codefactor.io/repository/github/fuzzygrim/yamtrack/badge)
-![Codecov](https://codecov.io/github/FuzzyGrim/Yamtrack/branch/dev/graph/badge.svg?token=PWUG660120)
 ![GitHub](https://img.shields.io/badge/license-AGPL--3.0-blue)
 
-Yamtrack is a self hosted media tracker for movies, tv shows, anime, manga, video games, books, comics, and board games.
+Trackii is a self hosted media tracker for movies, tv shows, anime, manga, video games, books, comics, and board games.
 
 ## 📱 Repo Specific Features
 
-| Sort Lists by Ratings                                                                                       | Preferences Tab for Optional Features                                                                                    |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Sort Lists by Ratings                                                                                                                   | Preferences Tab for Optional Features                                                                                                                             |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <img alt="Screenshot 2025-11-13 at 8 45 17 PM" src="https://github.com/user-attachments/assets/77eb1685-d709-485f-a79b-2b4de2698009" /> | <img width="1176" height="583" alt="Screenshot 2025-11-13 at 8 46 54 PM" src="https://github.com/user-attachments/assets/0368c01b-a10c-44a9-9ed1-aa150b78f3aa" /> |
 
-
-| Top 10 Statistics                                                                                    | Activity Overview Statistics                                                                                     |
-| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Top 10 Statistics                                                                                                                       | Activity Overview Statistics                                                                                                            |
+| --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | <img alt="Screenshot 2025-11-13 at 8 48 32 PM" src="https://github.com/user-attachments/assets/9150add3-c7dd-4a18-a422-fcc67c30bb37" /> | <img alt="Screenshot 2025-11-13 at 8 49 48 PM" src="https://github.com/user-attachments/assets/91d85919-30c9-4a9d-b65b-92c4e78f8c5c" /> |
 
-| Combined Duplicates                                                                                         | Sort by Time Left                                                                                    |
-| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Combined Duplicates                                                                                                                     | Sort by Time Left                                                                                                                       |
+| --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | <img alt="Screenshot 2025-11-13 at 8 51 18 PM" src="https://github.com/user-attachments/assets/4d3c2796-90c7-47fe-b23e-c8104fff92cf" /> | <img alt="Screenshot 2025-11-13 at 8 52 39 PM" src="https://github.com/user-attachments/assets/3966fe33-9f9d-4d4d-bf35-1cbf61ac2e90" /> |
 
-| Refined Mobile Layout Changes                                                                                         | Optionally Convert In Progress to Paused after Delay                                                                                    |
-| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Refined Mobile Layout Changes                                                                                                           | Optionally Convert In Progress to Paused after Delay                                                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | <img alt="Screenshot 2025-11-13 at 8 51 18 PM" src="https://github.com/user-attachments/assets/3f0ad1dd-8121-4d31-8641-a6e60fc9d4c4" /> | <img alt="Screenshot 2025-11-15 at 8 17 50 PM" src="https://github.com/user-attachments/assets/8222884e-ac1e-417e-be14-fa744918755a" /> |
-| Added History Page                                                                                         | Placeholder for Second Screenshot                                                                                    |
-| <img  alt="Screenshot 2025-11-26 at 6 12 33 PM" src="https://github.com/user-attachments/assets/65ae9a2c-ad33-4129-85e4-4653ef48658a" />
- | <img/> |
+| Added History Page                                                                                                                      | Placeholder for Second Screenshot                                                                                                       |
 
+| <img  alt="Screenshot 2025-11-26 at 6 12 33 PM" src="https://github.com/user-attachments/assets/65ae9a2c-ad33-4129-85e4-4653ef48658a" />
+| <img/> |
 
 ## 📱 Repo Specific Installation
-Docker image is now available: ```docker pull ghcr.io/Johnnycyan/yamtrack:release```
+
+Docker image is now available: `docker pull ghcr.io/Johnnycyan/Trackii:release`
 
 To build locally use the following commands:
 
 ```bash
 cd /mnt/users/appdata
-git clone https://github.com/Johnnycyan/Yamtrack.git
-cd Yamtrack
+git clone https://github.com/Johnnycyan/Trackii.git
+cd Trackii
 
 cat > .env <<EOF
 TMDB_API=CHANGE_ME
@@ -59,12 +55,14 @@ docker compose up -d
 ```
 
 To update your container:
+
 ```
-cd /mnt/users/appdata/Yamtrack
+cd /mnt/users/appdata/Trackii
 git checkout release
 git pull origin release
 docker compose build --no-cache
 ```
+
 Then recreate your container with the new image (e.g. "Recreate" in Portainer).
 
 ## 🚀 Demo
@@ -132,10 +130,10 @@ When using a reverse proxy, if you see a `403 - Forbidden` error, you need to se
 
 ```bash
 services:
-  yamtrack:
+  trackii:
     ...
     environment:
-      - URLS=https://yamtrack.mydomain.com
+      - URLS=https://trackii.mydomain.com
     ...
 ```
 
@@ -143,15 +141,15 @@ Note that the setting must include the correct protocol (`https` or `http`), and
 
 ### ⚙️ Environment variables
 
-For detailed information on environment variables, please refer to the [Environment Variables wiki page](https://github.com/FuzzyGrim/Yamtrack/wiki/Environment-Variables).
+For detailed information on environment variables, please refer to the [Environment Variables wiki page](https://github.com/Johnnycyan/Trackii/wiki/Environment-Variables).
 
 ## 💻 Local development
 
 Clone the repository and change directory to it.
 
 ```bash
-git clone https://github.com/Johnnycyan/Yamtrack.git
-cd Yamtrack
+git clone https://github.com/Johnnycyan/Trackii.git
+cd Trackii
 ```
 
 Install Redis or spin up a bare redis container:
@@ -185,7 +183,7 @@ Go to: http://localhost:8000
 
 ## 💪 Support the Project
 
-There are many ways you can support Yamtrack's development:
+There are many ways you can support Trackii's development:
 
 ### ⭐ Star the Project
 
@@ -193,15 +191,15 @@ The simplest way to show your support is to star the repository on GitHub. It he
 
 ### 🐛 Bug Reports
 
-Found a bug? Open an [issue](https://github.com/Johnnycyan/Yamtrack/issues) on GitHub with detailed steps to reproduce it. Quality bug reports are incredibly valuable for improving stability.
+Found a bug? Open an [issue](https://github.com/Johnnycyan/Trackii/issues) on GitHub with detailed steps to reproduce it. Quality bug reports are incredibly valuable for improving stability.
 
 ### 💡 Feature Suggestions
 
-Have ideas for new features? Share them through [GitHub issues](https://github.com/Johnnycyan/Yamtrack/issues). Your feedback helps shape the future of Yamtrack.
+Have ideas for new features? Share them through [GitHub issues](https://github.com/Johnnycyan/Trackii/issues). Your feedback helps shape the future of Trackii.
 
 ### 🧪 Contributing
 
-Pull requests are welcome! Whether it's fixing typos, improving documentation, or adding new features, your contributions help make Yamtrack better for everyone.
+Pull requests are welcome! Whether it's fixing typos, improving documentation, or adding new features, your contributions help make Trackii better for everyone.
 
 ### ☕ Donate
 

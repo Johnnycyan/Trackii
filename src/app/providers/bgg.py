@@ -1,4 +1,5 @@
 """BoardGameGeek (BGG) API provider for board game metadata."""
+
 import logging
 import time
 
@@ -33,7 +34,7 @@ def _bgg_request(endpoint, params=None):
     _rate_limit()
     url = f"{BASE_URL}/{endpoint}"
     headers = {
-        "User-Agent": "Yamtrack/1.0 (https://github.com/FuzzyGrim/Yamtrack)",
+        "User-Agent": "Trackii/1.0 (https://github.com/FuzzyGrim/Trackii)",
     }
 
     bgg_token = getattr(settings, "BGG_API_TOKEN", None)

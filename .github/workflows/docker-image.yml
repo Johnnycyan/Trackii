@@ -14,7 +14,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: johnnycyan/yamtrack
+  IMAGE_NAME: johnnycyan/trackii
 
 jobs:
   build:

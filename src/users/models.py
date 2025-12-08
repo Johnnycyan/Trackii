@@ -127,6 +127,7 @@ class GameLoggingStyleChoices(models.TextChoices):
     SESSIONS = "sessions", "Sessions"
     REPEATS = "repeats", "Repeats"
 
+
 class User(AbstractUser):
     """Custom user model."""
 
@@ -570,7 +571,9 @@ class User(AbstractUser):
             ),
             models.CheckConstraint(
                 name="activity_history_view_valid",
-                condition=models.Q(activity_history_view__in=ActivityHistoryViewChoices.values),
+                condition=models.Q(
+                    activity_history_view__in=ActivityHistoryViewChoices.values,
+                ),
             ),
             models.CheckConstraint(
                 name="list_detail_sort_valid",
@@ -699,7 +702,7 @@ class User(AbstractUser):
             "myanimelist": "Import from MyAnimeList",
             "anilist": "Import from AniList",
             "kitsu": "Import from Kitsu",
-            "yamtrack": "Import from Yamtrack",
+            "trackii": "Import from Trackii",
             "hltb": "Import from HowLongToBeat",
             "steam": "Import from Steam",
             "imdb": "Import from IMDB",
