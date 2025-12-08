@@ -258,6 +258,9 @@ def list_detail(request, list_id):
         for item in items_page:
             item.media = media_by_item_id.get(item.id)
 
+    # Populate missing release dates from API (for year display)
+    helpers.populate_missing_release_dates(list(items_page))
+
     # Get recommendation count for owners/collaborators
     recommendation_count = 0
     if can_edit and custom_list.allow_recommendations:

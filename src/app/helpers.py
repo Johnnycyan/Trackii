@@ -180,3 +180,46 @@ def extract_release_datetime(metadata):
             continue
 
     return None
+
+
+def populate_missing_release_dates(items):
+    """Populate release_datetime for items that don't have it set.
+
+    Fetches metadata from the API for items missing release_datetime
+    and updates them in the database.
+    """
+    import logging
+
+    from app.providers import services
+
+    logger = logging.getLogger(__name__)
+
+    # Find items missing release_datetime
+    items_to_update = [item for item in items if not item.release_datetime]
+
+    if not items_to_update:
+        return
+
+    # Fetch metadata and update each item
+    for item in items_to_update:
+        try:
+            metadata = services.get_media_metadata(
+                item.media_type,
+                item.media_id,
+                item.source,
+            )
+            release_datetime = extract_release_datetime(metadata)
+            if release_datetime:
+                item.release_datetime = release_datetime
+                item.save(update_fields=["release_datetime"])
+                logger.debug(
+                    "Updated release_datetime for %s: %s",
+                    item.title,
+                    release_datetime,
+                )
+        except Exception as exc:
+            logger.warning(
+                "Failed to fetch release_datetime for %s: %s",
+                item.title,
+                exc,
+            )

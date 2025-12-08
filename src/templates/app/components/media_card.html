@@ -10,11 +10,20 @@
                         {% if public_preview %}, previewOpen: false{% endif %}
                         }" {% if public_preview %}@click="previewOpen = true"{% endif %}>
                         <div class="relative">
-                            <a {% if recommend_mode or public_preview %}href="#" @click.prevent{% else %}href="{{ item|media_url }}"{% endif %}>
-                                <img alt="{{ title }}"
-                                     class="media-card-poster lazyload w-full {% if from_grid %}aspect-[2/3] aspect-2/3{% else %}h-48{% endif %} bg-[#3e454d] {% if item.image != IMG_NONE %}object-cover{% endif %}"
-                                     {% if recommend_mode %}src="{{ item.image }}" loading="lazy"{% else %}data-src="{{ item.image }}" src="{{ IMG_NONE }}"{% endif %}>
-                            </a>
+                            {% if recommend_mode or public_preview %}
+                                <div class="cursor-pointer">
+                                    <img alt="{{ title }}"
+                                         class="media-card-poster lazyload w-full {% if from_grid %}aspect-[2/3] aspect-2/3{% else %}h-48{% endif %} bg-[#3e454d] {% if item.image != IMG_NONE %}object-cover{% endif %}"
+                                         {% if recommend_mode %}src="{{ item.image }}" loading="lazy"{% else %}data-src="{{ item.image }}" src="{{ IMG_NONE }}"{% endif %}>
+                                </div>
+                            {% else %}
+                                <a href="{{ item|media_url }}">
+                                    <img alt="{{ title }}"
+                                         class="media-card-poster lazyload w-full {% if from_grid %}aspect-[2/3] aspect-2/3{% else %}h-48{% endif %} bg-[#3e454d] {% if item.image != IMG_NONE %}object-cover{% endif %}"
+                                         data-src="{{ item.image }}"
+                                         src="{{ IMG_NONE }}">
+                                </a>
+                            {% endif %}
 
                             {% if recommend_mode %}
                                 {# Recommendation mode overlays #}
@@ -139,7 +148,7 @@
                                 {% endif %}
                             {% endif %}
 
-                            {% if not recommend_mode %}
+                            {% if not recommend_mode and not public_preview %}
                                 <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover-tap:opacity-100{% if user.clickable_media_cards %} pointer-coarse:hidden{% endif %}">
                                     <a href="{{ item|media_url }}" class="absolute inset-0"></a>
 
