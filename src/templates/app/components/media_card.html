@@ -4,17 +4,44 @@
 {% with current_sort|default_if_none:'' as current_sort_value %}
     {% with show_status_dates|default:True as show_status_dates_flag %}
         {% with is_search_result|default:False as search_result %}
-            <div class="media-card {% if secondary_color %}bg-[#39404b]{% else %}bg-[#2a2f35]{% endif %} rounded-lg overflow-hidden shadow-lg relative {% if active %}ring-2 ring-indigo-700{% endif %} {% if search_result %}search-result-card{% endif %} group"
+            {% with is_recommend_mode|default:False as recommend_mode %}
+            <div class="media-card {% if secondary_color %}bg-[#39404b]{% else %}bg-[#2a2f35]{% endif %} rounded-lg overflow-hidden shadow-lg relative {% if active %}ring-2 ring-indigo-700{% endif %} {% if search_result or recommend_mode %}search-result-card{% endif %} {% if recommend_mode %}cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all{% endif %} group"
+                 {% if recommend_mode %}
+                 hx-get="{% url 'recommend_search' recommend_list_id %}?show_preview=true&media_id={{ item.media_id }}&media_type={{ item.media_type }}&source={{ item.source }}&title={{ title|urlencode }}&image={{ item.image|urlencode }}"
+                 hx-target="#recommend-modal-container"
+                 hx-swap="innerHTML"
+                 {% endif %}
                  x-data="{ trackOpen: false, listsOpen: false, historyOpen: false }">
                 <div class="relative">
-                    <a href="{{ item|media_url }}">
+                    <a href="{{ item|media_url }}"{% if recommend_mode %} @click.prevent{% endif %}>
                         <img alt="{{ title }}"
                              class="media-card-poster lazyload w-full {% if from_grid %}aspect-[2/3] aspect-2/3{% else %}h-48{% endif %} bg-[#3e454d] {% if item.image != IMG_NONE %}object-cover{% endif %}"
-                             data-src="{{ item.image }}"
-                             src="{{ IMG_NONE }}">
+                             {% if recommend_mode %}src="{{ item.image }}" loading="lazy"{% else %}data-src="{{ item.image }}" src="{{ IMG_NONE }}"{% endif %}>
                     </a>
 
-                    {% if media %}
+                    {% if recommend_mode %}
+                        {# Recommendation mode overlays #}
+                        {% if item.already_in_list %}
+                            <div class="absolute inset-0 bg-black/70 flex items-center justify-center">
+                                <span class="px-3 py-1 bg-gray-600 text-gray-300 rounded-md text-sm font-medium">In List</span>
+                            </div>
+                        {% elif item.already_recommended %}
+                            <div class="absolute inset-0 bg-black/70 flex items-center justify-center">
+                                <span class="px-3 py-1 bg-amber-600/80 text-white rounded-md text-sm font-medium">Pending</span>
+                            </div>
+                        {% endif %}
+                        
+                        {# Watched eye icon for recommend mode #}
+                        {% if media %}
+                            {% with has_watched=media.end_date|default_if_none:media|safe_attr:"aggregated_end_date"|default_if_none:media.status %}
+                                {% if has_watched %}
+                                    <div class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
+                                        {% include "app/icons/eye.svg" with classes="w-4 h-4" %}
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                    {% elif media %}
                         {% with has_watched=media.end_date|default_if_none:media|safe_attr:"aggregated_end_date"|default_if_none:media.status %}
                             {% if media.status %}
                                 {% if not search_result or has_watched %}
@@ -22,7 +49,7 @@
                                          data-mobile-hide-on-mobile="{% if current_sort_value == 'score' or current_sort_value == 'time_left' or current_sort_value == 'progress' %}true{% else %}false{% endif %}">
                                         {% if media.aggregated_status %}
                                             {% with status_value=media.aggregated_status %}
-                                                <div class="w-4 h-4 {{ status_value|status_color }} {% if media.aggregated_start_date or media.aggregated_end_date %}mr-1.5{% endif %}">
+                                                <div class="w-4 h-4 {{ status_value|status_color }}">
                                                     {% if status_value == Status.COMPLETED.value %}
                                                         {% include "app/icons/states/completed.svg" %}
                                                     {% elif status_value == Status.IN_PROGRESS.value %}
@@ -38,7 +65,7 @@
                                             {% endwith %}
                                         {% else %}
                                             {% with status_value=media.status %}
-                                                <div class="w-4 h-4 {{ status_value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
+                                                <div class="w-4 h-4 {{ status_value|status_color }}">
                                                     {% if status_value == Status.COMPLETED.value %}
                                                         {% include "app/icons/states/completed.svg" %}
                                                     {% elif status_value == Status.IN_PROGRESS.value %}
@@ -115,6 +142,7 @@
                         {% endif %}
                     {% endif %}
 
+                    {% if not recommend_mode %}
                     <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover-tap:opacity-100{% if user.clickable_media_cards %} pointer-coarse:hidden{% endif %}">
                         <a href="{{ item|media_url }}" class="absolute inset-0"></a>
 
@@ -164,17 +192,25 @@
                             </button>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
 
                 <div class="media-card-body p-3 {% if secondary_color %}bg-[#39404b]{% else %}bg-[#2a2f35]{% endif %}">
-                    <a href="{{ item|media_url }}"
-                       class="media-card-title text-sm font-semibold text-white hover:text-indigo-400 transition duration-300 line-clamp-1"
-                       title="{{ title }}">{{ title }}</a>
+                    {% if recommend_mode %}
+                        <h3 class="media-card-title font-medium text-white line-clamp-2 text-sm leading-tight">{{ title }}</h3>
+                    {% else %}
+                        <a href="{{ item|media_url }}"
+                           class="media-card-title text-sm font-semibold text-white hover:text-indigo-400 transition duration-300 line-clamp-1"
+                           title="{{ title }}">{{ title }}</a>
+                    {% endif %}
                     {% with release_year=item|release_year:media %}
-                        {% if release_year and search_result %}
+                        {% if release_year and search_result or release_year and recommend_mode %}
                             <p class="media-card-year text-xs text-gray-400 mt-1">{{ release_year }}</p>
                         {% endif %}
                     {% endwith %}
+                    {% if recommend_mode %}
+                        <p class="text-xs text-gray-400 mt-1">{{ item.media_type|media_type_readable }}</p>
+                    {% endif %}
                     {% if duration %}<p class="text-xs text-gray-400 mt-1">{{ duration }}</p>{% endif %}
 
                     {# Enhanced aggregated data display for duplicates; safe to leave empty if fields aren't present #}
@@ -238,6 +274,7 @@
                     </div>
                 </div>
             </div>
+            {% endwith %}
         {% endwith %}
     {% endwith %}
 {% endwith %}

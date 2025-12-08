@@ -12,48 +12,7 @@
 {% elif results %}
   <div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
     {% for result in results %}
-      <div class="search-result-card bg-[#39404b] rounded-lg overflow-hidden shadow-lg relative cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all group"
-           hx-get="{% url 'recommend_search' custom_list.id %}?show_preview=true&media_id={{ result.item.media_id }}&media_type={{ result.item.media_type }}&source={{ result.item.source }}&title={{ result.item.title|urlencode }}&image={{ result.item.image|urlencode }}"
-           hx-target="#recommend-modal-container"
-           hx-swap="innerHTML">
-        <div class="relative">
-          <img alt="{{ result.item.title }}"
-               class="media-card-poster w-full aspect-[2/3] bg-[#3e454d] object-cover"
-               src="{{ result.item.image }}"
-               loading="lazy">
-          
-          {% if result.item.already_in_list %}
-            <div class="absolute inset-0 bg-black/70 flex items-center justify-center">
-              <span class="px-3 py-1 bg-gray-600 text-gray-300 rounded-md text-sm font-medium">In List</span>
-            </div>
-          {% elif result.item.already_recommended %}
-            <div class="absolute inset-0 bg-black/70 flex items-center justify-center">
-              <span class="px-3 py-1 bg-amber-600/80 text-white rounded-md text-sm font-medium">Pending</span>
-            </div>
-          {% endif %}
-
-          {% if result.media %}
-            {% with has_watched=result.media.end_date|default_if_none:result.media|safe_attr:"aggregated_end_date"|default_if_none:result.media.status %}
-              {% if has_watched %}
-                <div class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
-                  {% include "app/icons/eye.svg" with classes="w-4 h-4" %}
-                </div>
-              {% endif %}
-            {% endwith %}
-          {% endif %}
-        </div>
-        <div class="media-card-body p-3 bg-[#39404b]">
-          <h3 class="font-medium text-white line-clamp-2 text-sm leading-tight search-result-title">{{ result.item.title }}</h3>
-          {% with release_year=result.item|release_year:result.media %}
-            {% if release_year %}
-              <p class="media-card-year text-xs text-gray-400 mt-1">{{ release_year }}</p>
-            {% endif %}
-          {% endwith %}
-          <p class="text-xs text-gray-400 mt-1">
-            {{ result.item.media_type|media_type_readable }}
-          </p>
-        </div>
-      </div>
+      {% include "app/components/media_card.html" with item=result.item title=result.item.title media=result.media user=user is_recommend_mode=True recommend_list_id=custom_list.id secondary_color=True %}
     {% endfor %}
   </div>
 
