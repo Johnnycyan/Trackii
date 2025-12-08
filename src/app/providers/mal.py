@@ -408,6 +408,7 @@ def get_related(related_medias, media_type):
                 "title": media["node"]["title"],
                 "media_type": media_type,
                 "image": get_image_url(media["node"]),
+                "year": get_start_year(media["node"]),
             }
             for media in related_medias
         ]

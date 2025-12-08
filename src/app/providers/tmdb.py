@@ -618,12 +618,14 @@ def get_related(related_medias, media_type, parent_response=None):
         else:
             data["media_id"] = media["id"]
             data["title"] = get_title(media)
+            data["year"] = get_year(media)
         related.append(data)
     return related
 
 
 def get_collection(collection_response):
     """Format media collection list to match related media."""
+
     def date_key(media):
         date = media.get("release_date", "")
         if date is None or date == "":
@@ -640,6 +642,7 @@ def get_collection(collection_response):
             "image": get_image_url(media["poster_path"]),
             "media_id": media["id"],
             "title": get_title(media),
+            "year": get_year(media),
         }
         for media in parts
     ]
@@ -670,7 +673,9 @@ def process_episodes(season_metadata, episodes_in_db):
 
                 # TMDB returns dates in YYYY-MM-DD format
                 date_obj = datetime.strptime(air_date, "%Y-%m-%d")
-                air_date = timezone.make_aware(date_obj, timezone.get_current_timezone())
+                air_date = timezone.make_aware(
+                    date_obj, timezone.get_current_timezone()
+                )
             except (ValueError, TypeError):
                 # If parsing fails, keep the original value
                 pass

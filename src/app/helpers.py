@@ -125,3 +125,54 @@ def enrich_items_with_user_data(request, items):
         enriched_items.append(enriched_item)
 
     return enriched_items
+
+
+def extract_release_datetime(metadata):
+    """Extract release datetime from metadata dict.
+
+    Looks for various date fields that providers might return and converts
+    them to a timezone-aware datetime object.
+    """
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    # Try various date fields that providers use
+    date_str = None
+    for field in ["release_date", "first_air_date", "start_date", "publish_date"]:
+        if metadata.get("details", {}).get(field):
+            date_str = metadata["details"][field]
+            break
+        if metadata.get(field):
+            date_str = metadata[field]
+            break
+
+    if not date_str:
+        # Try to get year and create a Jan 1 date
+        year = metadata.get("year")
+        if year:
+            try:
+                return datetime(int(year), 1, 1, tzinfo=ZoneInfo("UTC"))
+            except (ValueError, TypeError):
+                return None
+        return None
+
+    # Parse the date string
+    if isinstance(date_str, datetime):
+        if date_str.tzinfo is None:
+            return date_str.replace(tzinfo=ZoneInfo("UTC"))
+        return date_str
+
+    # Try common date formats
+    for fmt in ["%Y-%m-%d", "%Y-%m", "%Y"]:
+        try:
+            dt = datetime.strptime(
+                str(date_str)[
+                    : len(fmt.replace("%", "").replace("-", "")) + fmt.count("-")
+                ],
+                fmt,
+            )
+            return dt.replace(tzinfo=ZoneInfo("UTC"))
+        except (ValueError, TypeError):
+            continue
+
+    return None

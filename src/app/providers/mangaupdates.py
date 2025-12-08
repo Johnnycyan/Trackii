@@ -246,5 +246,6 @@ async def fetch_series_data(session, url, item):
                 "media_type": MediaTypes.MANGA.value,
                 "title": item.get("related_series_name") or item.get("series_name"),
                 "image": image,
+                "year": data.get("year"),
             }
     return None

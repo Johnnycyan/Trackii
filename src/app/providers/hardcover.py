@@ -243,6 +243,7 @@ def get_recommendations(recommendations_data):
             "title": rec["item_book"]["title"],
             "media_type": MediaTypes.BOOK.value,
             "image": rec["item_book"].get("cached_image") or settings.IMG_NONE,
+            "year": get_year(rec["item_book"].get("release_date")),
         }
         for rec in recommendations_data
         if rec.get("item_book")

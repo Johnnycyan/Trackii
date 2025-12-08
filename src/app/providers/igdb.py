@@ -463,6 +463,7 @@ def get_related(related_medias):
                 "media_type": MediaTypes.GAME.value,
                 "title": game["name"],
                 "image": get_image_url(game),
+                "year": get_release_year(game),
             }
             for game in related_medias
         ]
