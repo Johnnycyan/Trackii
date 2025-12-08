@@ -3377,6 +3377,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+  max-height: 100%;
   transition: max-height 0.2s ease;
 }
 .search-result-card .media-card-poster {
