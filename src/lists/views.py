@@ -599,6 +599,40 @@ def recommend_search(request, list_id):
 
 
 @login_not_required
+@require_GET
+def public_media_preview(request):
+    """Show a preview modal for media item in public list view."""
+    media_id = request.GET.get("media_id")
+    media_type = request.GET.get("media_type")
+    source = request.GET.get("source")
+
+    if not all([media_id, media_type, source]):
+        return JsonResponse({"error": "Missing required parameters"}, status=400)
+
+    try:
+        media_metadata = services.get_media_metadata(media_type, media_id, source)
+    except Exception as exc:
+        logger.exception(
+            "Public media preview failed: media_type=%s media_id=%s",
+            media_type,
+            media_id,
+            exc_info=exc,
+        )
+        return JsonResponse(
+            {"error": "Unable to load details right now. Please try again."},
+            status=502,
+        )
+
+    context = {
+        "media": media_metadata,
+        "media_id": media_id,
+        "media_type": media_type,
+        "source": source,
+    }
+    return render(request, "lists/components/public_preview_modal.html", context)
+
+
+@login_not_required
 @require_POST
 def submit_recommendation(request, list_id):
     """Submit a recommendation for an item to be added to a list."""

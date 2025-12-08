@@ -205,6 +205,11 @@
       </div>
     </div>
   </div>
+
+  {% if is_public_view %}
+    {# Modal container for public media preview #}
+    <div id="public-preview-modal-container"></div>
+  {% endif %}
 {% endblock content %}
 {# djlint:on #}
 

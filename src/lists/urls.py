@@ -24,9 +24,13 @@ urlpatterns = [
     path("list/edit", views.edit, name="list_edit"),
     path("list/delete", views.delete, name="list_delete"),
     path("list_item_toggle", views.list_item_toggle, name="list_item_toggle"),
+    # Public list preview
+    path("media_preview", views.public_media_preview, name="public_media_preview"),
     # Recommendation URLs
     path(
-        "list/<int:list_id>/recommend", views.recommend_item_page, name="recommend_item",
+        "list/<int:list_id>/recommend",
+        views.recommend_item_page,
+        name="recommend_item",
     ),
     path(
         "list/<int:list_id>/recommend/search",
