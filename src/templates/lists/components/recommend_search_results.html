@@ -32,15 +32,17 @@
             </div>
           {% endif %}
 
-          {% with has_watched=result.media.aggregated_end_date|default_if_none:result.media.end_date|default_if_none:result.media.progress|default_if_none:result.media.aggregated_progress %}
-            {% if result.media and has_watched %}
-              <div class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
-                {% include "app/icons/eye.svg" with classes="w-4 h-4" %}
-              </div>
-            {% endif %}
-          {% endwith %}
+          {% if result.media %}
+            {% with has_watched=result.media|safe_attr:"aggregated_end_date"|default_if_none:result.media.end_date|default_if_none:result.media.progress|default_if_none:result.media|safe_attr:"aggregated_progress" %}
+              {% if has_watched %}
+                <div class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
+                  {% include "app/icons/eye.svg" with classes="w-4 h-4" %}
+                </div>
+              {% endif %}
+            {% endwith %}
+          {% endif %}
         </div>
-        <div class="p-3 transition-all duration-200 group-hover:-translate-y-1 group-hover:pb-4">
+        <div class="media-card-body p-3 bg-[#39404b]">
           <h3 class="font-medium text-white line-clamp-2 text-sm leading-tight search-result-title">{{ result.item.title }}</h3>
           {% with release_year=result.item|release_year:result.media %}
             {% if release_year %}

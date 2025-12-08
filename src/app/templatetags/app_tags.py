@@ -139,6 +139,14 @@ def long_unit(media_type):
 
 
 @register.filter
+def safe_attr(obj, attr):
+    """Safely get an attribute from an object, returning None if it doesn't exist."""
+    if obj is None:
+        return None
+    return getattr(obj, attr, None)
+
+
+@register.filter
 def release_year(item, media=None):
     """Return a best-effort release year from dicts or model instances."""
     if media and hasattr(media, "item"):
@@ -589,7 +597,7 @@ def _is_predefined_date_range(start_date, end_date, today):
 @register.filter
 def format_date_range_display(start_date, end_date):
     """Format date range for display in card titles.
-    
+
     Returns a human-readable string like "Last 12 Months" or "Date Range"
     based on whether it's a predefined range or custom dates.
     """
