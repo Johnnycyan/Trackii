@@ -584,8 +584,10 @@ def recommend_search(request, list_id):
         result["already_in_list"] = key in existing_items
         result["already_recommended"] = key in recommended_items
 
+    enriched_results = helpers.enrich_items_with_user_data(request, results)
+
     context = {
-        "results": results,
+        "results": enriched_results,
         "custom_list": custom_list,
         "query": query,
         "media_type": media_type,

@@ -2,7 +2,9 @@
 {% load user_tags %}
 
 {% with current_sort|default_if_none:'' as current_sort_value %}
-    <div class="media-card {% if secondary_color %}bg-[#39404b]{% else %}bg-[#2a2f35]{% endif %} rounded-lg overflow-hidden shadow-lg relative {% if active %}ring-2 ring-indigo-700{% endif %}"
+{% with show_status_dates|default:True as show_status_dates_flag %}
+{% with is_search_result|default:False as search_result %}
+    <div class="media-card {% if secondary_color %}bg-[#39404b]{% else %}bg-[#2a2f35]{% endif %} rounded-lg overflow-hidden shadow-lg relative {% if active %}ring-2 ring-indigo-700{% endif %} {% if search_result %}search-result-card{% endif %} group"
          x-data="{ trackOpen: false, listsOpen: false, historyOpen: false }">
         <div class="relative">
             <a href="{{ item|media_url }}">
@@ -12,7 +14,8 @@
                      src="{{ IMG_NONE }}">
             </a>
 
-            {% if media.status %}
+            {% with has_watched=media.aggregated_end_date|default_if_none:media.end_date|default_if_none:media.progress|default_if_none:media.aggregated_progress %}
+            {% if media.status and (not search_result or has_watched) %}
                 <div class="media-status-chip absolute top-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
                      data-mobile-hide-on-mobile="{% if current_sort_value == 'score' or current_sort_value == 'time_left' or current_sort_value == 'progress' %}true{% else %}false{% endif %}">
                     {% if media.aggregated_status %}
@@ -31,9 +34,9 @@
                                 {% endif %}
                             </div>
                         {% endwith %}
-                        {% if media.aggregated_end_date is not None %}
+                        {% if media.aggregated_end_date is not None and show_status_dates_flag %}
                             <span class="text-sm text-white">{{ media.aggregated_end_date|user_date_format:user }}</span>
-                        {% elif media.aggregated_start_date is not None %}
+                        {% elif media.aggregated_start_date is not None and show_status_dates_flag %}
                             <span class="text-sm text-white">{{ media.aggregated_start_date|user_date_format:user }}</span>
                         {% endif %}
                     {% else %}
@@ -52,14 +55,15 @@
                                 {% endif %}
                             </div>
                         {% endwith %}
-                        {% if media.end_date is not None %}
+                        {% if media.end_date is not None and show_status_dates_flag %}
                             <span class="text-sm text-white">{{ media.end_date|user_date_format:user }}</span>
-                        {% elif media.start_date is not None %}
+                        {% elif media.start_date is not None and show_status_dates_flag %}
                             <span class="text-sm text-white">{{ media.start_date|user_date_format:user }}</span>
                         {% endif %}
                     {% endif %}
                 </div>
             {% endif %}
+            {% endwith %}
 
             {% if media.aggregated_score is not None %}
                 <div class="media-score-chip absolute {% if from_grid %}sm:top-2 sm:right-2 sm:left-auto{% endif %}top-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
@@ -164,10 +168,15 @@
             </div>
         </div>
 
-        <div class="media-card-body p-3">
+        <div class="media-card-body p-3 {% if search_result %}transition-all duration-200 group-hover:-translate-y-1 group-hover:pb-4{% endif %}">
             <a href="{{ item|media_url }}"
-               class="media-card-title text-sm font-semibold text-white hover:text-indigo-400 transition duration-300 line-clamp-1"
+               class="media-card-title text-sm font-semibold text-white hover:text-indigo-400 transition duration-300 line-clamp-1 {% if search_result %}group-hover:line-clamp-none{% endif %}"
                title="{{ title }}">{{ title }}</a>
+            {% with release_year=item|release_year:media %}
+                {% if release_year and search_result %}
+                    <p class="media-card-year text-xs text-gray-400 mt-1">{{ release_year }}</p>
+                {% endif %}
+            {% endwith %}
             {% if duration %}<p class="text-xs text-gray-400 mt-1">{{ duration }}</p>{% endif %}
 
             {# Enhanced aggregated data display for duplicates; safe to leave empty if fields aren't present #}
@@ -227,4 +236,6 @@
             </div>
         </div>
     </div>
+{% endwith %}
+{% endwith %}
 {% endwith %}

@@ -63,6 +63,40 @@
   overflow-x: hidden;
 }
 
+.search-result-card .media-card-title,
+.search-result-card .search-result-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.search-result-card:hover .media-card-title,
+.search-result-card:hover .search-result-title {
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+}
+
+.search-result-card .media-card-body {
+  transition: transform 0.2s ease, padding 0.2s ease;
+}
+
+.search-result-card:hover .media-card-body {
+  transform: translateY(-4px);
+  padding-bottom: 1.25rem;
+}
+
+.search-result-card .media-card-year {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.search-result-card:hover .media-card-year {
+  max-height: 1.5rem;
+  opacity: 1;
+}
+
 @media (max-width: 768px) {
   .media-card {
     background-color: transparent !important;

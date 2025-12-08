@@ -139,6 +139,37 @@ def long_unit(media_type):
 
 
 @register.filter
+def release_year(item, media=None):
+    """Return a best-effort release year from dicts or model instances."""
+    if media and hasattr(media, "item"):
+        release_dt = getattr(media.item, "release_datetime", None)
+        if release_dt:
+            return timezone.localtime(release_dt).year
+
+    if not item:
+        return None
+
+    release_dt = getattr(item, "release_datetime", None)
+    if release_dt:
+        return timezone.localtime(release_dt).year
+
+    year_value = None
+    if isinstance(item, dict):
+        year_value = item.get("year") or item.get("start_year")
+        if not year_value:
+            date_value = item.get("release_date") or item.get("first_air_date")
+            if date_value:
+                year_value = str(date_value).split("-")[0]
+    else:
+        year_value = getattr(item, "year", None)
+
+    try:
+        return int(str(year_value)) if year_value is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
+@register.filter
 def sources(media_type):
     """Template filter to get source options for a media type."""
     return config.get_sources(media_type)

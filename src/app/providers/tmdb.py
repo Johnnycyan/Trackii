@@ -75,6 +75,7 @@ def search(media_type, query, page):
                 "media_type": media_type,
                 "title": get_title(media),
                 "image": get_image_url(media["poster_path"]),
+                "year": get_year(media),
             }
             for media in response["results"]
         ]
@@ -458,6 +459,18 @@ def get_title(response):
         return response["title"]
     except KeyError:
         return response["name"]
+
+
+def get_year(media):
+    """Extract a release or first air year from a TMDB search result."""
+    date_value = media.get("release_date") or media.get("first_air_date")
+    if not date_value:
+        return None
+
+    try:
+        return int(str(date_value).split("-")[0])
+    except (TypeError, ValueError):
+        return None
 
 
 def get_start_date(date):

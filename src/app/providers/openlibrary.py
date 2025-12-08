@@ -37,7 +37,7 @@ def search(query, page):
     if data is None:
         params = {
             "q": query,
-            "fields": "title,key,editions,editions.key,editions.cover_i,editions.title",
+            "fields": "title,key,editions,editions.key,editions.cover_i,editions.title,first_publish_year",
             "limit": settings.PER_PAGE,
             "page": page,
         }
@@ -74,6 +74,7 @@ def search(query, page):
                     "media_type": MediaTypes.BOOK.value,
                     "title": result_title,
                     "image": get_image_url(top_edition),
+                    "year": doc.get("first_publish_year"),
                 },
             )
 

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from enum import IntEnum
 
 import requests
@@ -200,7 +201,7 @@ def search(query, page):
         # Create the multiquery with both search and count
         multiquery = (
             'query games "SearchResults" {'
-            "fields name,cover.image_id;"
+            "fields name,cover.image_id,first_release_date;"
             "sort total_rating_count desc;"
             f"limit {settings.PER_PAGE};"
             f"offset {offset};"
@@ -249,6 +250,7 @@ def search(query, page):
                 "media_type": MediaTypes.GAME.value,
                 "title": media["name"],
                 "image": get_image_url(media),
+                "year": get_release_year(media),
             }
             for media in search_results
         ]
@@ -377,6 +379,18 @@ def get_game_type(game_type_id):
         14: "Update",
     }
     return game_type_mapping.get(game_type_id)
+
+
+def get_release_year(media):
+    """Return the release year from an IGDB search result."""
+    date_value = media.get("first_release_date")
+    if not date_value:
+        return None
+
+    try:
+        return datetime.utcfromtimestamp(date_value).year
+    except (TypeError, ValueError, OSError, OverflowError):
+        return None
 
 
 def get_start_date(response):

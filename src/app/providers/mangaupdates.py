@@ -84,6 +84,7 @@ def search(query, page):
                 "media_type": MediaTypes.MANGA.value,
                 "title": media["record"]["title"],
                 "image": get_image_url(media["record"]),
+                "year": media["record"].get("year"),
             }
             for media in response["results"]
         ]
