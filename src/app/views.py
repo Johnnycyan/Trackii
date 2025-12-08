@@ -43,7 +43,11 @@ def home(request):
     )
 
     # Populate missing release dates from API (for year display)
-    all_items = [m.item for media_list in list_by_type.values() for m in media_list]
+    all_items = [
+        m.item
+        for media_data in list_by_type.values()
+        for m in media_data.get("items", [])
+    ]
     helpers.populate_missing_release_dates(all_items)
 
     # If this is an HTMX request to load more items for a specific media type
