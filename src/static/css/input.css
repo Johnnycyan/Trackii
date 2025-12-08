@@ -64,11 +64,26 @@
 
 .search-result-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  /* Fixed aspect ratio to prevent grid shift */
+  aspect-ratio: 2/3.4;
+}
+
+/* Poster container - fills available space and shrinks on hover */
+.search-result-card > div:first-child {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  transition: flex 0.2s ease;
 }
 
 .search-result-card .media-card-poster {
-  aspect-ratio: 2/3;
-  height: auto !important;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: all 0.2s ease;
 }
 
 .search-result-card .media-card-title,
@@ -85,11 +100,9 @@
 }
 
 .search-result-card .media-card-body {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex: 0 0 auto;
   z-index: 10;
+  transition: all 0.2s ease;
 }
 
 .search-result-card .media-card-year {
@@ -97,6 +110,11 @@
   opacity: 0;
   overflow: hidden;
   transition: all 0.2s ease;
+}
+
+/* On hover, give less space to poster container */
+.search-result-card:hover > div:first-child {
+  flex: 0 0 75%;
 }
 
 .search-result-card:hover .media-card-year {
