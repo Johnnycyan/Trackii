@@ -64,7 +64,14 @@
 
 .search-result-card {
   position: relative;
+  aspect-ratio: 2/3;
   overflow: hidden;
+}
+
+.search-result-card .media-card-poster {
+  position: absolute;
+  inset: 0;
+  height: 100% !important;
 }
 
 .search-result-card .media-card-title,
@@ -86,12 +93,6 @@
   left: 0;
   right: 0;
   z-index: 10;
-  transition: padding 0.2s ease;
-}
-
-.search-result-card:hover .media-card-body {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
 }
 
 .search-result-card .media-card-year {

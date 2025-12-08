@@ -36,11 +36,6 @@
                                                     {% endif %}
                                                 </div>
                                             {% endwith %}
-                                            {% if media.aggregated_end_date is not None and show_status_dates_flag %}
-                                                <span class="text-sm text-white">{{ media.aggregated_end_date|user_date_format:user }}</span>
-                                            {% elif media.aggregated_start_date is not None and show_status_dates_flag %}
-                                                <span class="text-sm text-white">{{ media.aggregated_start_date|user_date_format:user }}</span>
-                                            {% endif %}
                                         {% else %}
                                             {% with status_value=media.status %}
                                                 <div class="w-4 h-4 {{ status_value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
@@ -57,11 +52,6 @@
                                                     {% endif %}
                                                 </div>
                                             {% endwith %}
-                                            {% if media.end_date is not None and show_status_dates_flag %}
-                                                <span class="text-sm text-white">{{ media.end_date|user_date_format:user }}</span>
-                                            {% elif media.start_date is not None and show_status_dates_flag %}
-                                                <span class="text-sm text-white">{{ media.start_date|user_date_format:user }}</span>
-                                            {% endif %}
                                         {% endif %}
                                     </div>
                                 {% endif %}
