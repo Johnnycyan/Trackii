@@ -48,6 +48,11 @@ urlpatterns = [
         name="list_recommendations",
     ),
     path(
+        "list/<int:list_id>/activity",
+        views.list_activity,
+        name="list_activity",
+    ),
+    path(
         "list/<int:list_id>/recommendations/<int:recommendation_id>/approve",
         views.approve_recommendation,
         name="approve_recommendation",

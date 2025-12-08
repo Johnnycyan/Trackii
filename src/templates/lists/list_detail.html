@@ -57,6 +57,12 @@
             <span>{{ recommendation_count }} Recommendation{{ recommendation_count|pluralize }}</span>
           </a>
         {% endif %}
+        <a href="{% url 'list_activity' custom_list.id %}"
+           class="px-4 py-2 bg-[#39404b] hover:bg-[#454d5a] rounded-md transition-colors flex items-center gap-2 text-sm group cursor-pointer"
+           title="View activity history">
+          {% include "app/icons/history.svg" with classes="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" %}
+          <span class="hidden sm:inline">Activity</span>
+        </a>
         <button @click="showModal = true"
                 class="px-4 py-2 bg-[#39404b] hover:bg-[#454d5a] rounded-md transition-colors flex items-center gap-2 text-sm group cursor-pointer">
           {% include "app/icons/horizontal-sliders.svg" with classes="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" %}

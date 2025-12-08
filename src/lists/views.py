@@ -13,7 +13,13 @@ from app import helpers
 from app.models import Item, MediaManager, MediaTypes
 from app.providers import services
 from lists.forms import CustomListForm
-from lists.models import CustomList, CustomListItem, ListRecommendation
+from lists.models import (
+    CustomList,
+    CustomListItem,
+    ListActivity,
+    ListActivityType,
+    ListRecommendation,
+)
 from users.models import ListDetailSortChoices, ListSortChoices
 
 logger = logging.getLogger(__name__)
@@ -410,10 +416,29 @@ def list_item_toggle(request):
         custom_list.items.remove(item)
         logger.info("%s removed from %s.", item, custom_list)
         has_item = False
+        # Log activity
+        ListActivity.objects.create(
+            custom_list=custom_list,
+            user=request.user,
+            activity_type=ListActivityType.ITEM_REMOVED,
+            item=item,
+        )
     else:
-        custom_list.items.add(item)
+        # Create CustomListItem with added_by user
+        CustomListItem.objects.create(
+            custom_list=custom_list,
+            item=item,
+            added_by=request.user,
+        )
         logger.info("%s added to %s.", item, custom_list)
         has_item = True
+        # Log activity
+        ListActivity.objects.create(
+            custom_list=custom_list,
+            user=request.user,
+            activity_type=ListActivityType.ITEM_ADDED,
+            item=item,
+        )
 
     return render(
         request,
@@ -699,11 +724,14 @@ def submit_recommendation(request, list_id):
     if not request.user.is_authenticated:
         anonymous_name = request.POST.get("anonymous_name", "").strip()[:100]
 
+    note = request.POST.get("note", "").strip()[:1000]
+
     ListRecommendation.objects.create(
         custom_list=custom_list,
         item=item,
         recommended_by=recommended_by,
         anonymous_name=anonymous_name,
+        note=note,
     )
 
     logger.info("Recommendation created: %s for %s", item.title, custom_list.name)
@@ -740,6 +768,31 @@ def list_recommendations(request, list_id):
     return render(request, "lists/list_recommendations.html", context)
 
 
+@require_GET
+def list_activity(request, list_id):
+    """View activity history for a list (owner/collaborators only)."""
+    custom_list = get_object_or_404(
+        CustomList.objects.select_related("owner").prefetch_related("collaborators"),
+        id=list_id,
+    )
+
+    if not custom_list.user_can_edit(request.user):
+        msg = "You do not have permission to view activity for this list"
+        raise Http404(msg)
+
+    activities = custom_list.activities.select_related(
+        "user",
+        "item",
+    ).order_by("-timestamp")[:100]  # Limit to last 100 activities
+
+    context = {
+        "custom_list": custom_list,
+        "activities": activities,
+    }
+
+    return render(request, "lists/list_activity.html", context)
+
+
 @require_POST
 def approve_recommendation(request, list_id, recommendation_id):
     """Approve a recommendation and add the item to the list."""
@@ -757,7 +810,12 @@ def approve_recommendation(request, list_id, recommendation_id):
 
     # Add item to the list if not already there
     if not custom_list.items.filter(id=recommendation.item.id).exists():
-        custom_list.items.add(recommendation.item)
+        # Create CustomListItem with added_by user
+        CustomListItem.objects.create(
+            custom_list=custom_list,
+            item=recommendation.item,
+            added_by=request.user,
+        )
         logger.info(
             "Recommendation approved: %s added to %s",
             recommendation.item.title,
@@ -766,6 +824,14 @@ def approve_recommendation(request, list_id, recommendation_id):
         messages.success(
             request,
             f'"{recommendation.item.title}" has been added to the list.',
+        )
+        # Log activity
+        ListActivity.objects.create(
+            custom_list=custom_list,
+            user=request.user,
+            activity_type=ListActivityType.RECOMMENDATION_APPROVED,
+            item=recommendation.item,
+            details=f"Recommended by {recommendation.recommender_display_name}",
         )
     else:
         messages.info(
@@ -795,7 +861,18 @@ def deny_recommendation(request, list_id, recommendation_id):
     )
 
     item_title = recommendation.item.title
+    item = recommendation.item
+    recommender_name = recommendation.recommender_display_name
     recommendation.delete()
+
+    # Log activity
+    ListActivity.objects.create(
+        custom_list=custom_list,
+        user=request.user,
+        activity_type=ListActivityType.RECOMMENDATION_DENIED,
+        item=item,
+        details=f"Recommended by {recommender_name}",
+    )
 
     logger.info("Recommendation denied: %s for %s", item_title, custom_list.name)
     messages.success(request, f'Recommendation for "{item_title}" has been removed.')

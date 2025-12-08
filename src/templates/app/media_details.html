@@ -459,7 +459,7 @@
                             {% if value|is_list %}
                                 {% for item in value %}<p class="text-gray-200">{{ item }}</p>{% endfor %}
                             {% else %}
-                                {% if key == 'first_air_date' or key == 'last_air_date' %}
+                                {% if key == 'first_air_date' or key == 'last_air_date' or key == 'release_date' %}
                                     <p class="text-gray-200">{{ value|user_date_format:user|default_if_none:"Unknown" }}</p>
                                 {% else %}
                                     <p class="text-gray-200">{{ value|default_if_none:"Unknown" }}</p>

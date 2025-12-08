@@ -1,5 +1,6 @@
 {% load app_tags %}
 {% load humanize %}
+{% load user_tags %}
 
 {# djlint:off #}
 <div x-data="{ open: true }" x-show="open" x-cloak class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" @keydown.escape.window="open = false; document.getElementById('recommend-modal-container').innerHTML = ''">
@@ -36,13 +37,13 @@
           
           {# Date info #}
           {% if media.details.first_air_date %}
-            <p class="text-gray-500 text-xs">{{ media.details.first_air_date }}</p>
+            <p class="text-gray-500 text-xs">{% if user.is_authenticated %}{{ media.details.first_air_date|user_date_format:user }}{% else %}{{ media.details.first_air_date }}{% endif %}</p>
           {% elif media.details.release_date %}
-            <p class="text-gray-500 text-xs">{{ media.details.release_date }}</p>
+            <p class="text-gray-500 text-xs">{% if user.is_authenticated %}{{ media.details.release_date|user_date_format:user }}{% else %}{{ media.details.release_date }}{% endif %}</p>
           {% elif media.first_air_date %}
-            <p class="text-gray-500 text-xs">{{ media.first_air_date }}</p>
+            <p class="text-gray-500 text-xs">{% if user.is_authenticated %}{{ media.first_air_date|user_date_format:user }}{% else %}{{ media.first_air_date }}{% endif %}</p>
           {% elif media.release_date %}
-            <p class="text-gray-500 text-xs">{{ media.release_date }}</p>
+            <p class="text-gray-500 text-xs">{% if user.is_authenticated %}{{ media.release_date|user_date_format:user }}{% else %}{{ media.release_date }}{% endif %}</p>
           {% elif media.year %}
             <p class="text-gray-500 text-xs">{{ media.year }}</p>
           {% endif %}

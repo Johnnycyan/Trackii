@@ -137,6 +137,13 @@ class CustomListItem(models.Model):
 
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     custom_list = models.ForeignKey(CustomList, on_delete=models.CASCADE)
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="The user who added this item to the list",
+    )
     date_added = models.DateTimeField(auto_now_add=True)
 
     objects = CustomListItemManager()
@@ -179,6 +186,11 @@ class ListRecommendation(models.Model):
         default="",
         help_text="Display name for anonymous recommenders",
     )
+    note = models.TextField(
+        blank=True,
+        default="",
+        help_text="Optional note from the recommender explaining their recommendation",
+    )
     date_recommended = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -202,3 +214,81 @@ class ListRecommendation(models.Model):
         if self.recommended_by:
             return self.recommended_by.username
         return self.anonymous_name or "Anonymous"
+
+
+class ListActivityType(models.TextChoices):
+    """Choices for list activity types."""
+
+    ITEM_ADDED = "item_added", "Item Added"
+    ITEM_REMOVED = "item_removed", "Item Removed"
+    RECOMMENDATION_APPROVED = "recommendation_approved", "Recommendation Approved"
+    RECOMMENDATION_DENIED = "recommendation_denied", "Recommendation Denied"
+    LIST_CREATED = "list_created", "List Created"
+    LIST_EDITED = "list_edited", "List Edited"
+    COLLABORATOR_ADDED = "collaborator_added", "Collaborator Added"
+    COLLABORATOR_REMOVED = "collaborator_removed", "Collaborator Removed"
+
+
+class ListActivity(models.Model):
+    """Model for tracking list activity history."""
+
+    custom_list = models.ForeignKey(
+        CustomList,
+        on_delete=models.CASCADE,
+        related_name="activities",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="The user who performed this action",
+    )
+    activity_type = models.CharField(
+        max_length=30,
+        choices=ListActivityType.choices,
+    )
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="The item involved in this activity (if applicable)",
+    )
+    details = models.TextField(
+        blank=True,
+        default="",
+        help_text="Additional details about the activity",
+    )
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        """Meta options for the model."""
+
+        ordering = ["-timestamp"]
+        verbose_name_plural = "List activities"
+
+    def __str__(self):
+        """Return a string representation of the activity."""
+        return f"{self.get_activity_type_display()} - {self.custom_list.name}"
+
+    @property
+    def description(self):
+        """Return a human-readable description of the activity."""
+        user_name = self.user.username if self.user else "Someone"
+        item_title = self.item.title if self.item else "an item"
+
+        descriptions = {
+            ListActivityType.ITEM_ADDED: f"{user_name} added {item_title}",
+            ListActivityType.ITEM_REMOVED: f"{user_name} removed {item_title}",
+            ListActivityType.RECOMMENDATION_APPROVED: f"{user_name} approved {item_title}",
+            ListActivityType.RECOMMENDATION_DENIED: f"{user_name} denied {item_title}",
+            ListActivityType.LIST_CREATED: f"{user_name} created the list",
+            ListActivityType.LIST_EDITED: f"{user_name} edited the list",
+            ListActivityType.COLLABORATOR_ADDED: f"{user_name} added a collaborator",
+            ListActivityType.COLLABORATOR_REMOVED: f"{user_name} removed a collaborator",
+        }
+        base_desc = descriptions.get(self.activity_type, "Unknown activity")
+        if self.details:
+            return f"{base_desc}: {self.details}"
+        return base_desc
