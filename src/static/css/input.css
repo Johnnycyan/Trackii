@@ -64,25 +64,11 @@
 
 .search-result-card {
   position: relative;
-  aspect-ratio: 2/3;
-  overflow: hidden;
-}
-
-.search-result-card > .relative {
-  position: absolute;
-  inset: 0;
-}
-
-.search-result-card > .relative > a {
-  display: block;
-  height: 100%;
 }
 
 .search-result-card .media-card-poster {
-  position: absolute;
-  inset: 0;
-  height: 100% !important;
-  aspect-ratio: auto !important;
+  aspect-ratio: 2/3;
+  height: auto !important;
 }
 
 .search-result-card .media-card-title,

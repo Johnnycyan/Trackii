@@ -35,7 +35,7 @@
         <div {% if layout == 'grid' %}
              class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
             {% for result in data.results %}
-                {% include "app/components/media_card.html" with item=result.item title=result.item.title media=result.media user=user is_search_result=True show_status_dates=False %}
+                {% include "app/components/media_card.html" with item=result.item title=result.item.title media=result.media user=user is_search_result=True show_status_dates=False from_grid=True %}
             {% endfor %}
         {% else %}
             class="grid grid-cols-1 gap-4">
