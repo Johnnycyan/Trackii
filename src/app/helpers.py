@@ -151,8 +151,8 @@ def extract_release_datetime(metadata):
             break
 
     if not date_str:
-        # Try to get year and create a Jan 1 date
-        year = metadata.get("year")
+        # Try to get year from details or top level and create a Jan 1 date
+        year = metadata.get("details", {}).get("year") or metadata.get("year")
         if year:
             try:
                 return datetime(int(year), 1, 1, tzinfo=ZoneInfo("UTC"))
@@ -167,14 +167,15 @@ def extract_release_datetime(metadata):
         return date_str
 
     # Try common date formats
-    for fmt in ["%Y-%m-%d", "%Y-%m", "%Y"]:
+    date_str = str(date_str)
+    format_lengths = {
+        "%Y-%m-%d": 10,  # e.g., "2024-12-08"
+        "%Y-%m": 7,  # e.g., "2024-12"
+        "%Y": 4,  # e.g., "2024"
+    }
+    for fmt, length in format_lengths.items():
         try:
-            dt = datetime.strptime(
-                str(date_str)[
-                    : len(fmt.replace("%", "").replace("-", "")) + fmt.count("-")
-                ],
-                fmt,
-            )
+            dt = datetime.strptime(date_str[:length], fmt)
             return dt.replace(tzinfo=ZoneInfo("UTC"))
         except (ValueError, TypeError):
             continue
@@ -208,6 +209,15 @@ def populate_missing_release_dates(items):
                 item.media_id,
                 item.source,
             )
+            if metadata is None:
+                logger.warning(
+                    "No metadata returned for %s (type=%s, id=%s, source=%s)",
+                    item.title,
+                    item.media_type,
+                    item.media_id,
+                    item.source,
+                )
+                continue
             release_datetime = extract_release_datetime(metadata)
             if release_datetime:
                 item.release_datetime = release_datetime
@@ -216,6 +226,15 @@ def populate_missing_release_dates(items):
                     "Updated release_datetime for %s: %s",
                     item.title,
                     release_datetime,
+                )
+            else:
+                logger.debug(
+                    "No release_datetime found in metadata for %s (type=%s). "
+                    "Details: %s, Year: %s",
+                    item.title,
+                    item.media_type,
+                    metadata.get("details", {}),
+                    metadata.get("year"),
                 )
         except Exception as exc:
             logger.warning(
