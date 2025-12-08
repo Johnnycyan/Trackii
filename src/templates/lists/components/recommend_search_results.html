@@ -33,7 +33,7 @@
           {% endif %}
 
           {% if result.media %}
-            {% with has_watched=result.media|safe_attr:"aggregated_end_date"|default_if_none:result.media.end_date|default_if_none:result.media.progress|default_if_none:result.media|safe_attr:"aggregated_progress" %}
+            {% with has_watched=result.media.end_date|default_if_none:result.media|safe_attr:"aggregated_end_date"|default_if_none:result.media.status %}
               {% if has_watched %}
                 <div class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
                   {% include "app/icons/eye.svg" with classes="w-4 h-4" %}

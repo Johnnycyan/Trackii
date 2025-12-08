@@ -15,7 +15,7 @@
                     </a>
 
                     {% if media %}
-                        {% with has_watched=media|safe_attr:"aggregated_end_date"|default_if_none:media.end_date|default_if_none:media.progress|default_if_none:media|safe_attr:"aggregated_progress" %}
+                        {% with has_watched=media.end_date|default_if_none:media|safe_attr:"aggregated_end_date"|default_if_none:media.status %}
                             {% if media.status %}
                                 {% if not search_result or has_watched %}
                                     <div class="media-status-chip absolute top-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"

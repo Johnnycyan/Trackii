@@ -64,6 +64,7 @@
 
 .search-result-card {
   position: relative;
+  overflow: hidden;
 }
 
 .search-result-card .media-card-title,
@@ -80,15 +81,15 @@
 }
 
 .search-result-card .media-card-body {
-  position: relative;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
-  transition:
-    margin-top 0.2s ease,
-    padding 0.2s ease;
+  transition: padding 0.2s ease;
 }
 
 .search-result-card:hover .media-card-body {
-  margin-top: -1rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
