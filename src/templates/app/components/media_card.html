@@ -14,58 +14,60 @@
                              src="{{ IMG_NONE }}">
                     </a>
 
-                    {% with has_watched=media.aggregated_end_date|default_if_none:media.end_date|default_if_none:media.progress|default_if_none:media.aggregated_progress %}
-                        {% if media.status %}
-                            {% if not search_result or has_watched %}
-                                <div class="media-status-chip absolute top-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
-                                     data-mobile-hide-on-mobile="{% if current_sort_value == 'score' or current_sort_value == 'time_left' or current_sort_value == 'progress' %}true{% else %}false{% endif %}">
-                                    {% if media.aggregated_status %}
-                                        {% with status_value=media.aggregated_status %}
-                                            <div class="w-4 h-4 {{ status_value|status_color }} {% if media.aggregated_start_date or media.aggregated_end_date %}mr-1.5{% endif %}">
-                                                {% if status_value == Status.COMPLETED.value %}
-                                                    {% include "app/icons/states/completed.svg" %}
-                                                {% elif status_value == Status.IN_PROGRESS.value %}
-                                                    {% include "app/icons/states/in-progress.svg" %}
-                                                {% elif status_value == Status.PAUSED.value %}
-                                                    {% include "app/icons/states/paused.svg" %}
-                                                {% elif status_value == Status.PLANNING.value %}
-                                                    {% include "app/icons/states/planning.svg" %}
-                                                {% elif status_value == Status.DROPPED.value %}
-                                                    {% include "app/icons/states/dropped.svg" %}
-                                                {% endif %}
-                                            </div>
-                                        {% endwith %}
-                                        {% if media.aggregated_end_date is not None and show_status_dates_flag %}
-                                            <span class="text-sm text-white">{{ media.aggregated_end_date|user_date_format:user }}</span>
-                                        {% elif media.aggregated_start_date is not None and show_status_dates_flag %}
-                                            <span class="text-sm text-white">{{ media.aggregated_start_date|user_date_format:user }}</span>
+                    {% if media %}
+                        {% with has_watched=media.aggregated_end_date|default_if_none:media.end_date|default_if_none:media.progress|default_if_none:media.aggregated_progress %}
+                            {% if media.status %}
+                                {% if not search_result or has_watched %}
+                                    <div class="media-status-chip absolute top-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
+                                         data-mobile-hide-on-mobile="{% if current_sort_value == 'score' or current_sort_value == 'time_left' or current_sort_value == 'progress' %}true{% else %}false{% endif %}">
+                                        {% if media.aggregated_status %}
+                                            {% with status_value=media.aggregated_status %}
+                                                <div class="w-4 h-4 {{ status_value|status_color }} {% if media.aggregated_start_date or media.aggregated_end_date %}mr-1.5{% endif %}">
+                                                    {% if status_value == Status.COMPLETED.value %}
+                                                        {% include "app/icons/states/completed.svg" %}
+                                                    {% elif status_value == Status.IN_PROGRESS.value %}
+                                                        {% include "app/icons/states/in-progress.svg" %}
+                                                    {% elif status_value == Status.PAUSED.value %}
+                                                        {% include "app/icons/states/paused.svg" %}
+                                                    {% elif status_value == Status.PLANNING.value %}
+                                                        {% include "app/icons/states/planning.svg" %}
+                                                    {% elif status_value == Status.DROPPED.value %}
+                                                        {% include "app/icons/states/dropped.svg" %}
+                                                    {% endif %}
+                                                </div>
+                                            {% endwith %}
+                                            {% if media.aggregated_end_date is not None and show_status_dates_flag %}
+                                                <span class="text-sm text-white">{{ media.aggregated_end_date|user_date_format:user }}</span>
+                                            {% elif media.aggregated_start_date is not None and show_status_dates_flag %}
+                                                <span class="text-sm text-white">{{ media.aggregated_start_date|user_date_format:user }}</span>
+                                            {% endif %}
+                                        {% else %}
+                                            {% with status_value=media.status %}
+                                                <div class="w-4 h-4 {{ status_value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
+                                                    {% if status_value == Status.COMPLETED.value %}
+                                                        {% include "app/icons/states/completed.svg" %}
+                                                    {% elif status_value == Status.IN_PROGRESS.value %}
+                                                        {% include "app/icons/states/in-progress.svg" %}
+                                                    {% elif status_value == Status.PAUSED.value %}
+                                                        {% include "app/icons/states/paused.svg" %}
+                                                    {% elif status_value == Status.PLANNING.value %}
+                                                        {% include "app/icons/states/planning.svg" %}
+                                                    {% elif status_value == Status.DROPPED.value %}
+                                                        {% include "app/icons/states/dropped.svg" %}
+                                                    {% endif %}
+                                                </div>
+                                            {% endwith %}
+                                            {% if media.end_date is not None and show_status_dates_flag %}
+                                                <span class="text-sm text-white">{{ media.end_date|user_date_format:user }}</span>
+                                            {% elif media.start_date is not None and show_status_dates_flag %}
+                                                <span class="text-sm text-white">{{ media.start_date|user_date_format:user }}</span>
+                                            {% endif %}
                                         {% endif %}
-                                    {% else %}
-                                        {% with status_value=media.status %}
-                                            <div class="w-4 h-4 {{ status_value|status_color }} {% if media.start_date or media.end_date %}mr-1.5{% endif %}">
-                                                {% if status_value == Status.COMPLETED.value %}
-                                                    {% include "app/icons/states/completed.svg" %}
-                                                {% elif status_value == Status.IN_PROGRESS.value %}
-                                                    {% include "app/icons/states/in-progress.svg" %}
-                                                {% elif status_value == Status.PAUSED.value %}
-                                                    {% include "app/icons/states/paused.svg" %}
-                                                {% elif status_value == Status.PLANNING.value %}
-                                                    {% include "app/icons/states/planning.svg" %}
-                                                {% elif status_value == Status.DROPPED.value %}
-                                                    {% include "app/icons/states/dropped.svg" %}
-                                                {% endif %}
-                                            </div>
-                                        {% endwith %}
-                                        {% if media.end_date is not None and show_status_dates_flag %}
-                                            <span class="text-sm text-white">{{ media.end_date|user_date_format:user }}</span>
-                                        {% elif media.start_date is not None and show_status_dates_flag %}
-                                            <span class="text-sm text-white">{{ media.start_date|user_date_format:user }}</span>
-                                        {% endif %}
-                                    {% endif %}
-                                </div>
+                                    </div>
+                                {% endif %}
                             {% endif %}
-                        {% endif %}
-                    {% endwith %}
+                        {% endwith %}
+                    {% endif %}
 
                     {% if media.aggregated_score is not None %}
                         <div class="media-score-chip absolute {% if from_grid %}sm:top-2 sm:right-2 sm:left-auto{% endif %}top-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
