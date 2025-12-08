@@ -42,6 +42,10 @@ def home(request):
         media_type_to_load,
     )
 
+    # Populate missing release dates from API (for year display)
+    all_items = [m.item for media_list in list_by_type.values() for m in media_list]
+    helpers.populate_missing_release_dates(all_items)
+
     # If this is an HTMX request to load more items for a specific media type
     if request.headers.get("HX-Request") and media_type_to_load:
         context = {
@@ -123,7 +127,8 @@ def media_list(request, media_type):
             direction = BasicMedia.objects.resolve_direction(sort_filter, None)
         else:
             direction = BasicMedia.objects.resolve_direction(
-                sort_filter, direction_pref
+                sort_filter,
+                direction_pref,
             )
         request.user.update_preference(direction_field, direction)
     status_filter = request.user.update_preference(
@@ -204,16 +209,16 @@ def media_list(request, media_type):
                 else 0
             )
             logger.debug(
-                f"  {i + 1}. {media.item.title} - Episodes left: {episodes_left}, Status: {getattr(media, 'status', 'Unknown')}"
+                f"  {i + 1}. {media.item.title} - Episodes left: {episodes_left}, Status: {getattr(media, 'status', 'Unknown')}",
             )
 
         # Additional debug info for pagination issues
         logger.debug(
-            f"DEBUG: Page {page} pagination info - has_next: {media_page.has_next()}, next_page: {media_page.next_page_number() if media_page.has_next() else 'None'}"
+            f"DEBUG: Page {page} pagination info - has_next: {media_page.has_next()}, next_page: {media_page.next_page_number() if media_page.has_next() else 'None'}",
         )
         if hasattr(media_page, "has_previous") and media_page.has_previous():
             logger.debug(
-                f"DEBUG: Page {page} has previous page: {media_page.previous_page_number()}"
+                f"DEBUG: Page {page} has previous page: {media_page.previous_page_number()}",
             )
     else:
         # Paginate results normally
@@ -225,6 +230,9 @@ def media_list(request, media_type):
             media_page.object_list,
             media_type,
         )
+
+    # Populate missing release dates from API (for year display)
+    helpers.populate_missing_release_dates([m.item for m in media_page])
 
     context = {
         "user": request.user,
@@ -1134,6 +1142,18 @@ def statistics(request):
     selected_range_name = _identify_predefined_range(start_date, end_date)
     show_year_charts = selected_range_name in (None, "All Time")
 
+    # Populate missing release dates from API (for year display)
+    items_to_check = []
+    for media in top_rated:
+        if hasattr(media, "item"):
+            items_to_check.append(media.item)
+    for media_type_data in top_played.values():
+        for entry in media_type_data:
+            media = entry.get("media")
+            if media and hasattr(media, "item"):
+                items_to_check.append(media.item)
+    helpers.populate_missing_release_dates(items_to_check)
+
     context = {
         "user": request.user,
         "start_date": start_date,
@@ -1193,11 +1213,11 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
             if media.item.runtime_minutes < 999999:
                 runtime_minutes = media.item.runtime_minutes
                 logger.debug(
-                    f"Using stored runtime for {media.item.title}: {runtime_minutes}min"
+                    f"Using stored runtime for {media.item.title}: {runtime_minutes}min",
                 )
             else:
                 logger.debug(
-                    f"Skipping invalid runtime marker ({media.item.runtime_minutes}min) for {media.item.title}"
+                    f"Skipping invalid runtime marker ({media.item.runtime_minutes}min) for {media.item.title}",
                 )
 
         if not runtime_minutes:
@@ -1223,7 +1243,7 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
                 episode_runtimes = list(episodes_with_runtime)
                 runtime_minutes = round(sum(episode_runtimes) / len(episode_runtimes))
                 logger.debug(
-                    f"Using average episode runtime for {media.item.title}: {runtime_minutes}min (from {len(episode_runtimes)} episodes)"
+                    f"Using average episode runtime for {media.item.title}: {runtime_minutes}min (from {len(episode_runtimes)} episodes)",
                 )
 
         if not runtime_minutes:
@@ -1231,13 +1251,13 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
             season_cache_key = f"tmdb_season_{media.item.media_id}_1"
             cached_season_data = cache.get(season_cache_key)
             if cached_season_data and cached_season_data.get("details", {}).get(
-                "runtime"
+                "runtime",
             ):
                 runtime_str = cached_season_data["details"]["runtime"]
                 runtime_minutes = parse_runtime_to_minutes(runtime_str)
                 if runtime_minutes and runtime_minutes > 0:
                     logger.debug(
-                        f"Using cached season avg runtime for {media.item.title}: {runtime_minutes}min"
+                        f"Using cached season avg runtime for {media.item.title}: {runtime_minutes}min",
                     )
             # Try other seasons if season 1 didn't work
             if not runtime_minutes:
@@ -1245,13 +1265,13 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
                     season_cache_key = f"tmdb_season_{media.item.media_id}_{season_num}"
                     cached_season_data = cache.get(season_cache_key)
                     if cached_season_data and cached_season_data.get("details", {}).get(
-                        "runtime"
+                        "runtime",
                     ):
                         runtime_str = cached_season_data["details"]["runtime"]
                         runtime_minutes = parse_runtime_to_minutes(runtime_str)
                         if runtime_minutes and runtime_minutes > 0:
                             logger.debug(
-                                f"Using cached season {season_num} avg runtime for {media.item.title}: {runtime_minutes}min"
+                                f"Using cached season {season_num} avg runtime for {media.item.title}: {runtime_minutes}min",
                             )
                             break
 
@@ -1264,7 +1284,7 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
             else:
                 runtime_minutes = 30
             logger.debug(
-                f"Using fallback runtime for {media.item.title}: {runtime_minutes}min"
+                f"Using fallback runtime for {media.item.title}: {runtime_minutes}min",
             )
         return runtime_minutes
 
@@ -1286,7 +1306,8 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
             if hasattr(media, "seasons"):
                 for season in media.seasons.all():
                     if getattr(season.item, "season_number", 0) and hasattr(
-                        season, "episodes"
+                        season,
+                        "episodes",
                     ):
                         max_ep_num = 0
                         for ep in season.episodes.all():
@@ -1372,7 +1393,7 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
             in ["Taskmaster", "Rent-a-Girlfriend", "The Last of Us"]
         ):
             logger.debug(
-                f"DEBUG 0 episodes: {media.item.title} - progress={media.progress}, max_progress={effective_max}, episodes_left={episodes_left}"
+                f"DEBUG 0 episodes: {media.item.title} - progress={media.progress}, max_progress={effective_max}, episodes_left={episodes_left}",
             )
 
         status = getattr(media, "status", Status.IN_PROGRESS.value)
@@ -1417,7 +1438,7 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
                 f"{episodes_left} ep" if episodes_left > 0 else "-"
             )
         logger.debug(
-            f"Active: {media.item.title} - {episodes_left} eps × {runtime}min = {total}min ({media.time_left_display})"
+            f"Active: {media.item.title} - {episodes_left} eps × {runtime}min = {total}min ({media.time_left_display})",
         )
         return (total, media.item.title.lower())
 
@@ -1461,7 +1482,7 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
         if not hasattr(m, "_debug_logged"):
             m._debug_logged = True
             logger.debug(
-                f"Dropped show: {m.item.title} - progress={m.progress}, max_progress={getattr(m, 'max_progress', 'MISSING')}, hasattr={hasattr(m, 'max_progress')}"
+                f"Dropped show: {m.item.title} - progress={m.progress}, max_progress={getattr(m, 'max_progress', 'MISSING')}, hasattr={hasattr(m, 'max_progress')}",
             )
 
         # Calculate episodes remaining (not watched)
@@ -1480,7 +1501,7 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
                 else:
                     m.time_left_display = f"{minutes}m"
                 logger.debug(
-                    f"Dropped: {m.item.title} - {episodes_left} eps left × {runtime}min = {total}min ({m.time_left_display})"
+                    f"Dropped: {m.item.title} - {episodes_left} eps left × {runtime}min = {total}min ({m.time_left_display})",
                 )
             else:
                 m.time_left_display = "0m"
@@ -1527,7 +1548,7 @@ def _sort_tv_media_by_time_left(media_list, direction="asc"):
             media.max_progress - media.progress if hasattr(media, "max_progress") else 0
         )
         logger.debug(
-            f"  {i + 1}. {media.item.title} - Episodes left: {episodes_left}, Status: {getattr(media, 'status', 'Unknown')}"
+            f"  {i + 1}. {media.item.title} - Episodes left: {episodes_left}, Status: {getattr(media, 'status', 'Unknown')}",
         )
 
     if direction == "desc":
@@ -1592,7 +1613,7 @@ def _adjust_month_delta(reference_date, months):
     candidate = reference_date - relativedelta(months=months)
     if candidate.day != reference_date.day:
         candidate = (candidate.replace(day=1) + relativedelta(months=1)) - timedelta(
-            days=1
+            days=1,
         )
     return candidate
 
