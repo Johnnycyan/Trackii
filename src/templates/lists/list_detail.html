@@ -227,5 +227,85 @@
       {% for media_type in media_types %}'{{ media_type }}': '{{ media_type|media_type_readable_plural }}',{% endfor %}
       'all': 'All Types'
     };
+
+    // Async release year loading
+    (function() {
+      const FETCH_URL = '{% url "fetch_release_year" %}';
+      const pendingFetches = new Set();
+      let fetchQueue = [];
+      let isProcessing = false;
+
+      function processQueue() {
+        if (isProcessing || fetchQueue.length === 0) return;
+        isProcessing = true;
+
+        // Process one item at a time with a small delay to avoid API spam
+        const itemId = fetchQueue.shift();
+        if (!itemId || pendingFetches.has(itemId)) {
+          isProcessing = false;
+          if (fetchQueue.length > 0) {
+            setTimeout(processQueue, 50);
+          }
+          return;
+        }
+
+        pendingFetches.add(itemId);
+
+        fetch(`${FETCH_URL}?item_id=${itemId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.year) {
+              // Update all placeholders with this item ID
+              document.querySelectorAll(`.release-year-placeholder[data-item-id="${itemId}"]`).forEach(el => {
+                el.textContent = data.year;
+                el.classList.remove('release-year-placeholder');
+              });
+            } else {
+              // Remove empty placeholders
+              document.querySelectorAll(`.release-year-placeholder[data-item-id="${itemId}"]`).forEach(el => {
+                el.remove();
+              });
+            }
+          })
+          .catch(err => {
+            console.warn('Failed to fetch release year for item', itemId, err);
+          })
+          .finally(() => {
+            isProcessing = false;
+            if (fetchQueue.length > 0) {
+              setTimeout(processQueue, 100); // Small delay between requests
+            }
+          });
+      }
+
+      function queueReleaseYearFetch(itemId) {
+        if (!pendingFetches.has(itemId) && !fetchQueue.includes(itemId)) {
+          fetchQueue.push(itemId);
+          processQueue();
+        }
+      }
+
+      function loadVisibleReleaseYears() {
+        document.querySelectorAll('.release-year-placeholder[data-item-id]').forEach(el => {
+          const itemId = el.dataset.itemId;
+          if (itemId) {
+            queueReleaseYearFetch(itemId);
+          }
+        });
+      }
+
+      // Load on initial page load
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadVisibleReleaseYears);
+      } else {
+        loadVisibleReleaseYears();
+      }
+
+      // Also load after HTMX swaps (for infinite scroll)
+      document.body.addEventListener('htmx:afterSwap', function(evt) {
+        // Small delay to ensure DOM is updated
+        setTimeout(loadVisibleReleaseYears, 50);
+      });
+    })();
     </script>
   {% endblock js %}

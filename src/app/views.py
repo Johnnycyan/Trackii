@@ -795,6 +795,7 @@ def episode_save(request):
             [season_number],
         )
         season_metadata = tv_with_seasons_metadata[f"season/{season_number}"]
+        release_datetime = helpers.extract_release_datetime(season_metadata)
 
         item, _ = Item.objects.get_or_create(
             media_id=media_id,
@@ -804,6 +805,7 @@ def episode_save(request):
             defaults={
                 "title": tv_with_seasons_metadata["title"],
                 "image": season_metadata["image"],
+                "release_datetime": release_datetime,
             },
         )
         related_season = Season.objects.create(

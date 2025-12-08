@@ -264,9 +264,6 @@ def list_detail(request, list_id):
         for item in items_page:
             item.media = media_by_item_id.get(item.id)
 
-    # Populate missing release dates from API (for year display)
-    helpers.populate_missing_release_dates(list(items_page))
-
     # Get recommendation count for owners/collaborators
     recommendation_count = 0
     if can_edit and custom_list.allow_recommendations:
@@ -379,6 +376,7 @@ def lists_modal(
             [season_number],
             episode_number,
         )
+        release_datetime = helpers.extract_release_datetime(metadata)
         item = Item.objects.create(
             media_id=media_id,
             source=source,
@@ -387,6 +385,7 @@ def lists_modal(
             episode_number=episode_number,
             title=metadata["title"],
             image=metadata["image"],
+            release_datetime=release_datetime,
         )
 
     custom_lists = CustomList.objects.get_user_lists_with_item(request.user, item)
@@ -698,6 +697,7 @@ def submit_recommendation(request, list_id):
             [season_number] if season_number else None,
             episode_number,
         )
+        release_datetime = helpers.extract_release_datetime(metadata)
         item = Item.objects.create(
             media_id=media_id,
             source=source,
@@ -706,6 +706,7 @@ def submit_recommendation(request, list_id):
             episode_number=episode_number,
             title=metadata["title"],
             image=metadata["image"],
+            release_datetime=release_datetime,
         )
 
     # Check if item is already in the list
@@ -878,3 +879,47 @@ def deny_recommendation(request, list_id, recommendation_id):
     messages.success(request, f'Recommendation for "{item_title}" has been removed.')
 
     return helpers.redirect_back(request)
+
+
+@require_GET
+@login_not_required
+def fetch_release_year(request):
+    """Fetch release year for a single item asynchronously.
+
+    This endpoint fetches the release date from the API for items that don't
+    have release_datetime set, updates the database, and returns the year.
+    """
+    item_id = request.GET.get("item_id")
+    if not item_id:
+        return JsonResponse({"error": "item_id required"}, status=400)
+
+    try:
+        item = Item.objects.get(id=item_id)
+    except Item.DoesNotExist:
+        return JsonResponse({"error": "Item not found"}, status=404)
+
+    # If already has release_datetime, return it
+    if item.release_datetime:
+        return JsonResponse({"year": item.release_datetime.year})
+
+    # Fetch from API and update
+    try:
+        metadata = services.get_media_metadata(
+            item.media_type,
+            item.media_id,
+            item.source,
+        )
+        if metadata:
+            release_datetime = helpers.extract_release_datetime(metadata)
+            if release_datetime:
+                item.release_datetime = release_datetime
+                item.save(update_fields=["release_datetime"])
+                return JsonResponse({"year": release_datetime.year})
+    except Exception as exc:
+        logger.warning(
+            "Failed to fetch release year for item %s: %s",
+            item_id,
+            exc,
+        )
+
+    return JsonResponse({"year": None})

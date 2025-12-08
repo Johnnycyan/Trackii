@@ -62,4 +62,9 @@ urlpatterns = [
         views.deny_recommendation,
         name="deny_recommendation",
     ),
+    path(
+        "api/fetch_release_year",
+        views.fetch_release_year,
+        name="fetch_release_year",
+    ),
 ]

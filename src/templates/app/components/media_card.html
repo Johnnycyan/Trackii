@@ -211,8 +211,14 @@
                                    title="{{ title }}">{{ title }}</a>
                             {% endif %}
                             {% with release_year=item|release_year:media %}
-                                {% if release_year and from_grid %}
-                                    <p class="media-card-year text-xs text-gray-400 mt-1">{{ release_year }}</p>
+                                {% if from_grid %}
+                                    {% if release_year %}
+                                        <p class="media-card-year text-xs text-gray-400 mt-1">{{ release_year }}</p>
+                                    {% elif item.id %}
+                                        {# Placeholder for async loading - only for DB items without release_datetime #}
+                                        <p class="media-card-year text-xs text-gray-400 mt-1 release-year-placeholder"
+                                           data-item-id="{{ item.id }}"></p>
+                                    {% endif %}
                                 {% endif %}
                             {% endwith %}
                             {% if recommend_mode %}<p class="text-xs text-gray-400 mt-1">{{ item.media_type|media_type_readable }}</p>{% endif %}
