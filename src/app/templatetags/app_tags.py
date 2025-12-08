@@ -149,6 +149,7 @@ def safe_attr(obj, attr):
 @register.filter
 def release_year(item, media=None):
     """Return a best-effort release year from dicts or model instances."""
+    # Try to get from media.item first (for tracked media)
     if media and hasattr(media, "item"):
         release_dt = getattr(media.item, "release_datetime", None)
         if release_dt:
@@ -157,24 +158,24 @@ def release_year(item, media=None):
     if not item:
         return None
 
-    release_dt = getattr(item, "release_datetime", None)
-    if release_dt:
-        return timezone.localtime(release_dt).year
-
-    year_value = None
+    # For dict items (search results)
     if isinstance(item, dict):
         year_value = item.get("year") or item.get("start_year")
         if not year_value:
             date_value = item.get("release_date") or item.get("first_air_date")
             if date_value:
                 year_value = str(date_value).split("-")[0]
-    else:
-        year_value = getattr(item, "year", None)
+        try:
+            return int(str(year_value)) if year_value is not None else None
+        except (TypeError, ValueError):
+            return None
 
-    try:
-        return int(str(year_value)) if year_value is not None else None
-    except (TypeError, ValueError):
-        return None
+    # For model instances (Item model from DB)
+    release_dt = getattr(item, "release_datetime", None)
+    if release_dt:
+        return timezone.localtime(release_dt).year
+
+    return None
 
 
 @register.filter

@@ -10,8 +10,7 @@
                         {% if public_preview %}, previewOpen: false{% endif %}
                         }" {% if public_preview %}@click="previewOpen = true"{% endif %}>
                         <div class="relative">
-                            <a href="{{ item|media_url }}"
-                               {% if recommend_mode or public_preview %}@click.prevent{% endif %}>
+                            <a {% if recommend_mode or public_preview %}href="#" @click.prevent{% else %}href="{{ item|media_url }}"{% endif %}>
                                 <img alt="{{ title }}"
                                      class="media-card-poster lazyload w-full {% if from_grid %}aspect-[2/3] aspect-2/3{% else %}h-48{% endif %} bg-[#3e454d] {% if item.image != IMG_NONE %}object-cover{% endif %}"
                                      {% if recommend_mode %}src="{{ item.image }}" loading="lazy"{% else %}data-src="{{ item.image }}" src="{{ IMG_NONE }}"{% endif %}>

@@ -71,6 +71,10 @@ def enrich_items_with_user_data(request, items):
     if not items:
         return []
 
+    # For anonymous users, just wrap items without media data
+    if not request.user.is_authenticated:
+        return [{"item": item, "media": None} for item in items]
+
     # All items are the same media type
     media_type = items[0]["media_type"]
     source = items[0]["source"]
