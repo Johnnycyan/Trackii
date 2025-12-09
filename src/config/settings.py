@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "api",
     "app",
     "events",
     "integrations",
@@ -410,7 +411,9 @@ TRACK_TIME = config("TRACK_TIME", default=True, cast=bool)
 
 # Runtime population settings
 RUNTIME_POPULATION_DISABLED = config(
-    "RUNTIME_POPULATION_DISABLED", default=False, cast=bool
+    "RUNTIME_POPULATION_DISABLED",
+    default=False,
+    cast=bool,
 )
 
 TZ = zoneinfo.ZoneInfo(TIME_ZONE)
