@@ -320,21 +320,35 @@
         {% endblock js %}
 
         <script>
-      // Media card hover - the year element is hidden by default via translateY
-      // On hover, we slide the body up to reveal the year
-      // No JS needed for the basic effect - CSS handles it
-      // This JS just calculates the correct translateY offset based on the year element height
+      // Media card hover - slide body up to reveal expanded title + year
       function initMediaCardHover() {
         document.querySelectorAll('.search-result-card').forEach(card => {
           if (card.dataset.hoverInit) return;
           card.dataset.hoverInit = 'true';
           
+          const title = card.querySelector('.media-card-title, .search-result-title');
           const year = card.querySelector('.media-card-year');
-          if (!year) return;
+          const body = card.querySelector('.media-card-body');
+          if (!title || !body) return;
           
-          // Measure the year element's height and set as the translate offset
-          const yearHeight = year.offsetHeight || 20;
-          card.style.setProperty('--year-height', yearHeight + 'px');
+          // Get current body height (1 line title, no year)
+          const initialBodyHeight = body.offsetHeight;
+          
+          // Measure expanded state: temporarily expand title to 3 lines and show year
+          const originalClamp = getComputedStyle(title).webkitLineClamp;
+          title.style.webkitLineClamp = '3';
+          if (year) year.style.opacity = '1';
+          
+          // Force reflow to get accurate measurements
+          const expandedBodyHeight = body.scrollHeight;
+          
+          // Reset
+          title.style.webkitLineClamp = '';
+          if (year) year.style.opacity = '';
+          
+          // Calculate how much extra space is needed on hover
+          const extraHeight = expandedBodyHeight - initialBodyHeight;
+          card.style.setProperty('--year-height', Math.max(0, extraHeight) + 'px');
         });
       }
       
