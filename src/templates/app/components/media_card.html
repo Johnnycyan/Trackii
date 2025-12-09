@@ -94,14 +94,14 @@
 
                             {% with aggregated_score=media|safe_attr:"aggregated_score" %}
                                 {% if aggregated_score is not None %}
-                                    <div class="media-score-chip absolute {% if from_grid %}sm:top-2 sm:right-2 sm:left-auto{% endif %}top-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
+                                    <div class="media-score-chip absolute {% if from_grid %}sm:top-2 sm:left-2 sm:left-auto{% endif %}top-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
                                          data-score-chip-mode="{{ score_chip_mode|default:'always' }}"
                                          data-mobile-show="{% if current_sort_value == 'score' %}true{% else %}false{% endif %}">
                                         {% include "app/icons/star.svg" with classes="w-4 h-4 text-yellow-400 mr-1 fill-current" %}
                                         <span class="text-sm text-white">{{ aggregated_score }}</span>
                                     </div>
                                 {% elif media.score is not None %}
-                                    <div class="media-score-chip absolute {% if from_grid %}sm:top-2 sm:right-2 sm:left-auto{% endif %}top-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
+                                    <div class="media-score-chip absolute {% if from_grid %}sm:top-2 sm:left-2 sm:left-auto{% endif %}top-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
                                          data-score-chip-mode="{{ score_chip_mode|default:'always' }}"
                                          data-mobile-show="{% if current_sort_value == 'score' %}true{% else %}false{% endif %}">
                                         {% include "app/icons/star.svg" with classes="w-4 h-4 text-yellow-400 mr-1 fill-current" %}
@@ -112,14 +112,14 @@
 
                             {% with aggregated_progress=media|safe_attr:"aggregated_progress" %}
                                 {% if aggregated_progress and media_type != MediaTypes.MOVIE.value %}
-                                    <div class="absolute bottom-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
+                                    <div class="absolute top-2 right-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
                                         <span class="text-sm text-white">
                                             {{ media.formatted_aggregated_progress }}
                                             {% if media.max_progress %}/ {{ media.max_progress }}{% endif %}
                                         </span>
                                     </div>
                                 {% elif media.progress and media_type != MediaTypes.MOVIE.value %}
-                                    <div class="media-progress-chip absolute bottom-2 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
+                                    <div class="media-progress-chip absolute top-2 right-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
                                          data-progress-chip-mode="{{ progress_chip_mode|default:'always' }}"
                                          data-mobile-show="{% if current_sort_value == 'progress' %}true{% else %}false{% endif %}">
                                         <span class="text-sm text-white">
@@ -132,7 +132,7 @@
 
                             {# Time Left display for time_left sort #}
                             {% if media_type == MediaTypes.TV.value and media.episodes_left > 0 %}
-                                <div class="media-time-left-chip absolute bottom-2 right-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
+                                <div class="media-time-left-chip absolute top-2 right-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md"
                                      data-time-left-mode="{{ time_left_chip_mode|default:'always' }}"
                                      data-mobile-show="{% if current_sort_value == 'time_left' %}true{% else %}false{% endif %}">
                                     <span class="text-sm text-white">{{ media.time_left_display|default:media.formatted_time_left }}</span>
@@ -141,7 +141,7 @@
 
                             {% if media.repeats > 1 %}
                                 {% if item.media_type != MediaTypes.GAME.value and item.media_type != MediaTypes.BOARDGAME.value or user.game_logging_style != 'sessions' %}
-                                    <div class="absolute sm:bottom-2 sm:right-2 sm:left-auto bottom-10 left-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
+                                    <div class="absolute sm:top-2 sm:right-2 sm:left-auto top-10 right-2 bg-gray-900/90 text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
                                         {% include "app/icons/repeat.svg" with classes="w-4 h-4 text-slate-200 mr-1" %}
                                         <span class="text-sm text-white">{{ media.repeats }}</span>
                                     </div>
