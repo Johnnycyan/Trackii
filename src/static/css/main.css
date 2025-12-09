@@ -3389,9 +3389,9 @@
   bottom: 0;
   overflow: hidden;
 }
-/* Ensure any wrapper (a, div) inside poster container fills it */
-.search-result-card > div:first-child > a,
-.search-result-card > div:first-child > div {
+/* Ensure the image link/wrapper fills the poster container */
+.search-result-card > div:first-child > a:first-child,
+.search-result-card > div:first-child > div.cursor-pointer {
   display: block;
   width: 100%;
   height: 100%;
