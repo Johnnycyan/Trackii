@@ -81,6 +81,14 @@
   overflow: hidden;
 }
 
+/* Ensure any wrapper (a, div) inside poster container fills it */
+.search-result-card > div:first-child > a,
+.search-result-card > div:first-child > div {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .search-result-card .media-card-poster {
   width: 100%;
   height: 100%;
