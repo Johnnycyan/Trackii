@@ -331,24 +331,34 @@
           const body = card.querySelector('.media-card-body');
           if (!title || !body) return;
           
-          // Get current body height (1 line title, no year)
+          // Get current body height (1 line title, no year visible)
           const initialBodyHeight = body.offsetHeight;
           
           // Measure expanded state: temporarily expand title to 3 lines and show year
-          const originalClamp = getComputedStyle(title).webkitLineClamp;
           title.style.webkitLineClamp = '3';
-          if (year) year.style.opacity = '1';
+          let yearHeight = 0;
+          if (year) {
+            year.style.display = 'block';
+            year.style.opacity = '1';
+            yearHeight = year.offsetHeight;
+          }
           
           // Force reflow to get accurate measurements
-          const expandedBodyHeight = body.scrollHeight;
+          const expandedTitleHeight = title.scrollHeight;
+          const initialTitleHeight = title.offsetHeight;
           
           // Reset
           title.style.webkitLineClamp = '';
-          if (year) year.style.opacity = '';
+          if (year) {
+            year.style.display = '';
+            year.style.opacity = '';
+          }
           
-          // Calculate how much extra space is needed on hover
-          const extraHeight = expandedBodyHeight - initialBodyHeight;
-          card.style.setProperty('--year-height', Math.max(0, extraHeight) + 'px');
+          // Calculate extra height: additional title lines + year
+          const extraTitleHeight = Math.max(0, expandedTitleHeight - initialTitleHeight);
+          const extraHeight = extraTitleHeight + yearHeight;
+          
+          card.style.setProperty('--year-height', extraHeight + 'px');
         });
       }
       
