@@ -3371,22 +3371,22 @@
   flex-direction: column;
   /* Fixed aspect ratio to prevent grid shift */
   aspect-ratio: 2/3.4;
-}
-/* Poster container - fills available space and shrinks on hover */
-.search-result-card > div:first-child {
-  flex: 1 1 auto;
-  min-height: 0;
   overflow: hidden;
-  max-height: 100%;
-  transition: max-height 0.2s ease;
+}
+/* Poster container - fixed size, doesn't change on hover */
+.search-result-card > div:first-child {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
 }
 .search-result-card .media-card-poster {
   width: 100%;
   height: 100%;
   object-fit: cover !important;
-  object-position: center !important;
   aspect-ratio: unset !important;
-  transition: none !important;
 }
 .search-result-card .media-card-title,
 .search-result-card .search-result-title {
@@ -3400,31 +3400,24 @@
   line-clamp: 3;
 }
 .search-result-card .media-card-body {
-  flex: 0 0 auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
-  transition: all 0.2s ease;
+  transform: translateY(var(--year-height, 1.25rem));
+  transition: transform 0.2s ease;
 }
 .search-result-card .media-card-year {
-  max-height: 0;
   opacity: 0;
-  overflow: hidden;
-  /* Faster transition out (0.1s) for leaving hover */
-  transition:
-    max-height 0.1s ease,
-    opacity 0.1s ease;
+  transition: opacity 0.1s ease;
 }
-/* Dynamic shrinkage based on title lines - set via CSS custom property */
-.search-result-card:hover > div:first-child {
-  /* Default for 1-line title: ~1.25rem title + ~1.25rem year + ~1.5rem padding = ~4rem */
-  max-height: calc(100% - var(--body-height, 4rem));
+.search-result-card:hover .media-card-body {
+  transform: translateY(0);
 }
 .search-result-card:hover .media-card-year {
-  max-height: 1.5rem;
   opacity: 1;
-  /* Slower transition in (0.2s) for hover */
-  transition:
-    max-height 0.2s ease,
-    opacity 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 @media (max-width: 768px) {
   .media-card {

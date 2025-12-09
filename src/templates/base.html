@@ -320,33 +320,21 @@
         {% endblock js %}
 
         <script>
-      // Media card hover - calculate body height based on title lines
+      // Media card hover - the year element is hidden by default via translateY
+      // On hover, we slide the body up to reveal the year
+      // No JS needed for the basic effect - CSS handles it
+      // This JS just calculates the correct translateY offset based on the year element height
       function initMediaCardHover() {
         document.querySelectorAll('.search-result-card').forEach(card => {
           if (card.dataset.hoverInit) return;
           card.dataset.hoverInit = 'true';
           
-          const title = card.querySelector('.media-card-title, .search-result-title');
-          const body = card.querySelector('.media-card-body');
-          if (!title || !body) return;
+          const year = card.querySelector('.media-card-year');
+          if (!year) return;
           
-          card.addEventListener('mouseenter', () => {
-            // Temporarily allow full expansion to measure
-            const originalClamp = title.style.webkitLineClamp;
-            title.style.webkitLineClamp = '3';
-            
-            // Get line height and calculate lines
-            const lineHeight = parseFloat(getComputedStyle(title).lineHeight) || 20;
-            const titleHeight = title.scrollHeight;
-            const lines = Math.min(3, Math.ceil(titleHeight / lineHeight));
-            
-            // Reset
-            title.style.webkitLineClamp = originalClamp;
-            
-            // Calculate body height: (lines * lineHeight) + year(~20px) + padding(~24px)
-            const bodyHeight = (lines * lineHeight) + 20 + 24;
-            card.style.setProperty('--body-height', bodyHeight + 'px');
-          });
+          // Measure the year element's height and set as the translate offset
+          const yearHeight = year.offsetHeight || 20;
+          card.style.setProperty('--year-height', yearHeight + 'px');
         });
       }
       
