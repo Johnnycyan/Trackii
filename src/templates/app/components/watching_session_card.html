@@ -2,12 +2,14 @@
 
 <div class="media-card bg-[#2a2f35] rounded-lg overflow-hidden shadow-lg transition-all duration-300">
     <div class="relative">
-        <a href="{% url 'media_details' session.item.source session.media_type session.item.media_id session.title|slugify %}"
-           class="absolute inset-0"></a>
+        {% if session.item %}
+            <a href="{% url 'media_details' session.item.source session.media_type session.item.media_id session.title|slugify %}"
+               class="absolute inset-0"></a>
+        {% endif %}
         
         <img alt="{{ session.title }}"
              class="media-card-poster lazyload w-full aspect-[2/3] object-cover"
-             data-src="{% if session.item.image %}{{ session.item.image }}{% else %}{{ IMG_NONE }}{% endif %}"
+             data-src="{% if session.item and session.item.image %}{{ session.item.image }}{% else %}{{ IMG_NONE }}{% endif %}"
              src="{{ IMG_NONE }}">
 
         <div class="absolute bottom-0 left-0 right-0 p-2 bg-black/60">
@@ -19,11 +21,18 @@
     </div>
 
     <div class="media-card-body p-3 space-y-2">
-        <a href="{% url 'media_details' session.item.source session.media_type session.item.media_id session.title|slugify %}"
-           class="media-card-title text-sm font-semibold text-white hover:text-indigo-400 transition duration-300 line-clamp-1 text-center"
-           title="{{ session.title }}">
-            {{ session.title }}
-        </a>
+        {% if session.item %}
+            <a href="{% url 'media_details' session.item.source session.media_type session.item.media_id session.title|slugify %}"
+               class="media-card-title text-sm font-semibold text-white hover:text-indigo-400 transition duration-300 line-clamp-1 text-center"
+               title="{{ session.title }}">
+                {{ session.title }}
+            </a>
+        {% else %}
+            <span class="media-card-title text-sm font-semibold text-white line-clamp-1 text-center block"
+                  title="{{ session.title }}">
+                {{ session.title }}
+            </span>
+        {% endif %}
         <p class="text-xs text-gray-400 text-center">{{ session.media_type|title }}</p>
     </div>
 </div>
