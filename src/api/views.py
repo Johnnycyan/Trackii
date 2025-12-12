@@ -4,6 +4,7 @@ import json
 import logging
 from functools import wraps
 
+from django.contrib.auth.decorators import login_not_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.utils import timezone
@@ -64,6 +65,7 @@ def parse_json_body(request):
 
 
 @csrf_exempt
+@login_not_required
 @require_GET
 @token_required
 def auth_test(request):
@@ -80,6 +82,7 @@ def auth_test(request):
 
 
 @csrf_exempt
+@login_not_required
 @require_POST
 @token_required
 def scrobble_start(request):
@@ -213,6 +216,7 @@ def scrobble_start(request):
 
 
 @csrf_exempt
+@login_not_required
 @require_POST
 @token_required
 def scrobble_pause(request):
@@ -259,6 +263,7 @@ def scrobble_pause(request):
 
 
 @csrf_exempt
+@login_not_required
 @require_POST
 @token_required
 def scrobble_stop(request):
@@ -334,6 +339,7 @@ def scrobble_stop(request):
 
 
 @csrf_exempt
+@login_not_required
 @require_GET
 @token_required
 def watching(request):
@@ -362,6 +368,7 @@ def watching(request):
 
 
 @csrf_exempt
+@login_not_required
 @require_GET
 @token_required
 def search(request):
@@ -398,6 +405,7 @@ def search(request):
 
 
 @csrf_exempt
+@login_not_required
 @require_GET
 @token_required
 def lookup(request):
