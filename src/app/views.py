@@ -37,12 +37,22 @@ def home(request):
     items_limit = 14
 
     # Fetch active scrobble sessions (partial watches < 80%)
-    watching_sessions = ScrobbleSession.objects.filter(
+    # Fetch more items to allow for filtering duplicates in python
+    active_sessions = ScrobbleSession.objects.filter(
         user=request.user,
         progress__gt=0,
         progress__lt=80,
         item__isnull=False,
-    ).order_by("-updated_at")[:5]
+    ).select_related("item").order_by("-updated_at")[:20]
+
+    watching_sessions = []
+    seen_items = set()
+    for session in active_sessions:
+        if session.item.id not in seen_items:
+            watching_sessions.append(session)
+            seen_items.add(session.item.id)
+            if len(watching_sessions) == 5:
+                break
 
     list_by_type = BasicMedia.objects.get_in_progress(
         request.user,

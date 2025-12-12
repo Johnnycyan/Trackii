@@ -16,7 +16,6 @@
             <div class="w-full bg-gray-700 rounded-full h-1.5">
                 <div class="bg-indigo-500 h-1.5 rounded-full" style="width: {{ session.progress|floatformat:0 }}%;"></div>
             </div>
-            <p class="text-xs text-white text-center mt-1">{{ session.progress|floatformat:0 }}% watched</p>
         </div>
     </div>
 
@@ -33,6 +32,15 @@
                 {{ session.title }}
             </span>
         {% endif %}
-        <p class="text-xs text-gray-400 text-center">{{ session.media_type|title }}</p>
+        
+        <div class="flex justify-between items-center text-xs text-gray-400">
+            <span>
+                {{ session.media_type|title }}
+                {% if session.season and session.episode %}
+                    • S{{ session.season }}E{{ session.episode }}
+                {% endif %}
+            </span>
+            <span>{{ session.progress|floatformat:0 }}%</span>
+        </div>
     </div>
 </div>
