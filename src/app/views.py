@@ -41,6 +41,7 @@ def home(request):
         user=request.user,
         progress__gt=0,
         progress__lt=80,
+        item__isnull=False,
     ).order_by("-updated_at")[:5]
 
     list_by_type = BasicMedia.objects.get_in_progress(

@@ -148,6 +148,16 @@ def scrobble_start(request):
     ids = data.get("ids", {})
 
     # Try to find matching media item
+    logger.info(
+        "Attempting to match media: type=%s title='%s' year=%s S%sE%s IDs=%s",
+        mapped_type,
+        data.get("title"),
+        data.get("year"),
+        data.get("season"),
+        data.get("episode"),
+        ids,
+    )
+    
     item = _find_media_item(
         mapped_type,
         title=data.get("title"),
@@ -159,6 +169,11 @@ def scrobble_start(request):
         tvdb_id=ids.get("tvdb"),
         mal_id=ids.get("mal"),
     )
+    
+    if item:
+        logger.info("Found matching item: %s (ID: %s)", item.title, item.id)
+    else:
+        logger.warning("No matching item found for %s", data.get("title"))
 
     # Close any existing active sessions for this user
     ScrobbleSession.objects.filter(
