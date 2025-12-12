@@ -41,7 +41,7 @@ def handle_error(error):
     )
 
 
-def search(media_type, query, page):
+def search(query, page=1, media_type="multi"):
     """Search for media on TMDB."""
     cache_key = f"search_{Sources.TMDB.value}_{media_type}_{query}_{page}"
     data = cache.get(cache_key)
@@ -68,17 +68,26 @@ def search(media_type, query, page):
         except requests.exceptions.HTTPError as error:
             handle_error(error)
 
-        results = [
-            {
+        results = []
+        for media in response["results"]:
+            # Handle multi-search results which might include people (ignore them)
+            result_media_type = media.get("media_type", media_type)
+            if result_media_type == "person":
+                continue
+                
+            # If searching for specific type, force it (e.g. "movie" or "tv")
+            # If "multi", use the one from the result
+            if media_type != "multi":
+                result_media_type = media_type
+
+            results.append({
                 "media_id": media["id"],
                 "source": Sources.TMDB.value,
-                "media_type": media_type,
+                "media_type": result_media_type,
                 "title": get_title(media),
-                "image": get_image_url(media["poster_path"]),
+                "image": get_image_url(media.get("poster_path")),
                 "year": get_year(media),
-            }
-            for media in response["results"]
-        ]
+            })
 
         total_results = response["total_results"]
         per_page = 20  # TMDB always returns 20 results per page

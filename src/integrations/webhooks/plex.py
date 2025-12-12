@@ -62,9 +62,9 @@ class PlexWebhookProcessor(BaseWebhookProcessor):
 
         try:
             search_results = app.providers.tmdb.search(
-                MediaTypes.TV.value,
                 series_title,
                 page=1,
+                media_type=MediaTypes.TV.value,
             )
         except Exception:  # pragma: no cover - defensive
             logger.exception("Failed TMDB search while resolving plex:// GUID")

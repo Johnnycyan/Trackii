@@ -194,9 +194,9 @@ def search(media_type, query, page, source=None):
     elif media_type == MediaTypes.ANIME.value:
         response = mal.search(media_type, query, page)
     elif media_type in (MediaTypes.TV.value, MediaTypes.MOVIE.value):
-        response = tmdb.search(media_type, query, page)
+        response = tmdb.search(query, page, media_type)
     elif media_type in (MediaTypes.SEASON.value, MediaTypes.EPISODE.value):
-        response = tmdb.search(MediaTypes.TV.value, query, page)
+        response = tmdb.search(query, page, MediaTypes.TV.value)
     elif media_type == MediaTypes.GAME.value:
         response = igdb.search(query, page)
     elif media_type == MediaTypes.BOOK.value:
