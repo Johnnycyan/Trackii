@@ -1,0 +1,12 @@
+{% load app_tags %}
+
+{% if watching_sessions %}
+    <div class="space-y-4 sm:space-y-8 mb-8">
+        <h2 class="text-xl font-semibold mb-2 sm:mb-4">Continue Watching</h2>
+        <div class="media-grid">
+            {% for session in watching_sessions %}
+                {% include "app/components/watching_session_card.html" with session=session %}
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

@@ -17,6 +17,7 @@ from django.utils.dateparse import parse_date
 from django.utils.timezone import datetime
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from api.models import ScrobbleSession, ScrobbleState
 from app import cache_utils, config, helpers, history_cache, history_processor
 from app import statistics as stats
 from app.forms import EpisodeForm, ManualItemForm, get_form_class
@@ -34,6 +35,13 @@ def home(request):
     sort_by = request.user.update_preference("home_sort", request.GET.get("sort"))
     media_type_to_load = request.GET.get("load_media_type")
     items_limit = 14
+
+    # Fetch active scrobble sessions (partial watches < 80%)
+    watching_sessions = ScrobbleSession.objects.filter(
+        user=request.user,
+        progress__gt=0,
+        progress__lt=80,
+    ).order_by("-updated_at")[:5]
 
     list_by_type = BasicMedia.objects.get_in_progress(
         request.user,
@@ -60,6 +68,7 @@ def home(request):
     context = {
         "user": request.user,
         "list_by_type": list_by_type,
+        "watching_sessions": watching_sessions,
         "current_sort": sort_by,
         "sort_choices": HomeSortChoices.choices,
         "items_limit": items_limit,
