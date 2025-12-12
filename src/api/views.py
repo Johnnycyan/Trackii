@@ -158,7 +158,7 @@ def scrobble_start(request):
         ids,
     )
     
-    item = _find_media_item(
+    item, found_tmdb_id = _find_media_item(
         mapped_type,
         title=data.get("title"),
         year=data.get("year"),
@@ -181,6 +181,9 @@ def scrobble_start(request):
         state__in=[ScrobbleState.WATCHING, ScrobbleState.PAUSED],
     ).update(state=ScrobbleState.STOPPED)
 
+    # Use found ID if provided ID is missing
+    tmdb_id = str(found_tmdb_id) if found_tmdb_id else str(ids.get("tmdb", ""))
+
     # Create new session
     session = ScrobbleSession.objects.create(
         user=user,
@@ -190,7 +193,7 @@ def scrobble_start(request):
         year=data.get("year"),
         season=data.get("season"),
         episode=data.get("episode"),
-        tmdb_id=str(ids.get("tmdb", "")),
+        tmdb_id=tmdb_id,
         imdb_id=str(ids.get("imdb", "")),
         tvdb_id=str(ids.get("tvdb", "")),
         mal_id=str(ids.get("mal", "")),
@@ -523,8 +526,9 @@ def _find_media_item(
             media_type=MediaTypes.ANIME.value,
         ).first()
         if item:
-            return item
+            return item, None
 
+    # Check database with initial TMDB ID
     if tmdb_id:
         if media_type == MediaTypes.MOVIE.value:
             item = Item.objects.filter(
@@ -533,7 +537,7 @@ def _find_media_item(
                 media_type=MediaTypes.MOVIE.value,
             ).first()
             if item:
-                return item
+                return item, tmdb_id
         elif media_type == MediaTypes.TV.value:
             item = Item.objects.filter(
                 media_id=str(tmdb_id),
@@ -541,29 +545,63 @@ def _find_media_item(
                 media_type=MediaTypes.TV.value,
             ).first()
             if item:
-                return item
+                return item, tmdb_id
 
-    # Try IMDB lookup if no TMDB ID
-    if imdb_id and not tmdb_id:
-        try:
-            response = app.providers.tmdb.find(imdb_id, "imdb_id")
-            if media_type == MediaTypes.MOVIE.value and response.get("movie_results"):
-                tmdb_id = response["movie_results"][0]["id"]
-            elif media_type == MediaTypes.TV.value and response.get("tv_results"):
-                tmdb_id = response["tv_results"][0]["id"]
-        except Exception as e:
-            logger.warning("IMDB lookup failed: %s", e)
+    # Try to resolve TMDB ID if missing
+    if not tmdb_id:
+        # Try IMDB lookup
+        if imdb_id:
+            try:
+                response = app.providers.tmdb.find(imdb_id, "imdb_id")
+                if media_type == MediaTypes.MOVIE.value and response.get("movie_results"):
+                    tmdb_id = response["movie_results"][0]["id"]
+                elif media_type == MediaTypes.TV.value and response.get("tv_results"):
+                    tmdb_id = response["tv_results"][0]["id"]
+            except Exception as e:
+                logger.warning("IMDB lookup failed: %s", e)
 
-    # Try TVDB lookup
-    if tvdb_id and not tmdb_id and media_type == MediaTypes.TV.value:
-        try:
-            response = app.providers.tmdb.find(tvdb_id, "tvdb_id")
-            if response.get("tv_results"):
-                tmdb_id = response["tv_results"][0]["id"]
-        except Exception as e:
-            logger.warning("TVDB lookup failed: %s", e)
+        # Try TVDB lookup
+        if tvdb_id and not tmdb_id and media_type == MediaTypes.TV.value:
+            try:
+                response = app.providers.tmdb.find(tvdb_id, "tvdb_id")
+                if response.get("tv_results"):
+                    tmdb_id = response["tv_results"][0]["id"]
+            except Exception as e:
+                logger.warning("TVDB lookup failed: %s", e)
+        
+        # Try Title search lookup if still no ID
+        if title and not tmdb_id:
+            try:
+                # Use limited search
+                search_results = app.providers.tmdb.search(title, media_type=media_type)
+                results = search_results.get("results", [])
+                if results:
+                    # Logic to verify year could be added here for better accuracy
+                    tmdb_id = results[0]["media_id"]
+                    logger.info("Found match via title search: %s -> ID %s", title, tmdb_id)
+            except Exception as e:
+                logger.warning("Title search failed: %s", e)
 
-    return None
+    # If we resolved a TMDB ID, check the database again
+    if tmdb_id:
+        if media_type == MediaTypes.MOVIE.value:
+            item = Item.objects.filter(
+                media_id=str(tmdb_id),
+                source=Sources.TMDB.value,
+                media_type=MediaTypes.MOVIE.value,
+            ).first()
+            if item:
+                return item, tmdb_id
+        elif media_type == MediaTypes.TV.value:
+            item = Item.objects.filter(
+                media_id=str(tmdb_id),
+                source=Sources.TMDB.value,
+                media_type=MediaTypes.TV.value,
+            ).first()
+            if item:
+                return item, tmdb_id
+
+    return None, tmdb_id
 
 
 def _get_session_media_info(session):
