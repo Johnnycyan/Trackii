@@ -212,6 +212,9 @@ def scrobble_start(request):
         session.title or (item.title if item else "Unknown"),
     )
 
+    # Auto-track as In-Progress when scrobbling starts
+    _auto_track_media(session, user)
+
     response_data = {
         "action": "start",
         "status": "watching",
@@ -804,6 +807,123 @@ def _mark_anime_watched(session, user, now):
             )
     except Exception as e:
         logger.error("Failed to mark anime as watched: %s", e)
+
+
+def _auto_track_media(session, user):
+    """Auto-track media as In-Progress when scrobbling starts.
+    
+    Creates tracking entries if they don't exist.
+    """
+    now = timezone.now().replace(second=0, microsecond=0)
+    
+    if session.media_type == MediaTypes.MOVIE.value:
+        _auto_track_movie(session, user, now)
+    elif session.media_type == MediaTypes.TV.value:
+        _auto_track_tv(session, user, now)
+    elif session.media_type == MediaTypes.ANIME.value:
+        _auto_track_anime(session, user, now)
+
+
+def _auto_track_movie(session, user, now):
+    """Auto-track movie as In-Progress."""
+    if not session.item and session.tmdb_id:
+        # Try to create item from TMDB
+        try:
+            movie_metadata = app.providers.tmdb.movie(int(session.tmdb_id))
+            session.item, _ = Item.objects.get_or_create(
+                media_id=session.tmdb_id,
+                source=Sources.TMDB.value,
+                media_type=MediaTypes.MOVIE.value,
+                defaults={
+                    "title": movie_metadata["title"],
+                    "image": movie_metadata["image"],
+                },
+            )
+            session.save()
+        except Exception as e:
+            logger.warning("Failed to create movie item for auto-track: %s", e)
+            return
+
+    if not session.item:
+        logger.debug("Cannot auto-track movie: no item linked")
+        return
+
+    # Only create if no existing entry
+    existing = app.models.Movie.objects.filter(item=session.item, user=user).first()
+    if not existing:
+        app.models.Movie.objects.create(
+            item=session.item,
+            user=user,
+            progress=0,
+            status=Status.IN_PROGRESS.value,
+            start_date=now,
+        )
+        logger.info("Auto-tracked movie as In-Progress: %s", session.item.title)
+
+
+def _auto_track_tv(session, user, now):
+    """Auto-track TV show as In-Progress."""
+    if not session.tmdb_id:
+        logger.debug("Cannot auto-track TV: no TMDB ID")
+        return
+
+    try:
+        tv_metadata = app.providers.tmdb.tv(int(session.tmdb_id))
+
+        tv_item, _ = Item.objects.get_or_create(
+            media_id=session.tmdb_id,
+            source=Sources.TMDB.value,
+            media_type=MediaTypes.TV.value,
+            defaults={
+                "title": tv_metadata["title"],
+                "image": tv_metadata["image"],
+            },
+        )
+
+        # Only create TV instance if none exists
+        existing = app.models.TV.objects.filter(item=tv_item, user=user).first()
+        if not existing:
+            app.models.TV.objects.create(
+                item=tv_item,
+                user=user,
+                status=Status.IN_PROGRESS.value,
+            )
+            logger.info("Auto-tracked TV as In-Progress: %s", tv_metadata["title"])
+    except Exception as e:
+        logger.warning("Failed to auto-track TV: %s", e)
+
+
+def _auto_track_anime(session, user, now):
+    """Auto-track anime as In-Progress."""
+    if not session.mal_id:
+        logger.debug("Cannot auto-track anime: no MAL ID")
+        return
+
+    try:
+        anime_metadata = app.providers.mal.anime(int(session.mal_id))
+        anime_item, _ = Item.objects.get_or_create(
+            media_id=session.mal_id,
+            source=Sources.MAL.value,
+            media_type=MediaTypes.ANIME.value,
+            defaults={
+                "title": anime_metadata["title"],
+                "image": anime_metadata["image"],
+            },
+        )
+
+        # Only create if no existing entry
+        existing = app.models.Anime.objects.filter(item=anime_item, user=user).first()
+        if not existing:
+            app.models.Anime.objects.create(
+                item=anime_item,
+                user=user,
+                progress=0,
+                status=Status.IN_PROGRESS.value,
+                start_date=now,
+            )
+            logger.info("Auto-tracked anime as In-Progress: %s", anime_metadata["title"])
+    except Exception as e:
+        logger.warning("Failed to auto-track anime: %s", e)
 
 
 def _search_media(query, media_type=None, year=None, limit=10):

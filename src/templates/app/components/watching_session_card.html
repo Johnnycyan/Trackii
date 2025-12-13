@@ -1,16 +1,60 @@
 {% load app_tags %}
+{% load user_tags %}
 
-<div class="media-card bg-[#2a2f35] rounded-lg overflow-hidden shadow-lg transition-all duration-300">
+<div class="media-card bg-[#2a2f35] rounded-lg overflow-hidden shadow-lg transition-all duration-300 group"
+     x-data="{ trackOpen: false, listsOpen: false, historyOpen: false }">
     <div class="relative">
         {% if session.item %}
             <a href="{% url 'media_details' session.item.source session.media_type session.item.media_id session.title|slugify %}"
-               class="absolute inset-0"></a>
+               class="absolute inset-0 z-10"></a>
         {% endif %}
         
         <img alt="{{ session.title }}"
              class="media-card-poster lazyload w-full aspect-[2/3] object-cover"
              data-src="{% if session.item and session.item.image %}{{ session.item.image }}{% else %}{{ IMG_NONE }}{% endif %}"
              src="{{ IMG_NONE }}">
+
+        {# Hover buttons overlay #}
+        {% if session.item %}
+            <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover-tap:opacity-100{% if user.clickable_media_cards %} pointer-coarse:hidden{% endif %} z-20">
+                <a href="{% url 'media_details' session.item.source session.media_type session.item.media_id session.title|slugify %}" class="absolute inset-0"></a>
+
+                <div class="relative flex items-center justify-center space-x-2.5">
+                    {# Track Button #}
+                    <button class="p-2.5 bg-indigo-600 text-white rounded-full hover:bg-indigo-500 hover:scale-110 hover:shadow-[0_0_15px_rgba(99,102,241,0.5)] transition-all duration-200 cursor-pointer"
+                            title="Add to tracker"
+                            hx-get="{% media_view_url 'track_modal' session.item %}"
+                            hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}"}'
+                            hx-target="#session-track-{{ session.id }}"
+                            hx-trigger="click once"
+                            @click="trackOpen = true">
+                        {% include "app/icons/edit.svg" with classes="w-4 h-4" %}
+                    </button>
+
+                    {# Lists Button #}
+                    <button class="p-2.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-500 hover:scale-110 hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-200 cursor-pointer"
+                            title="Add to custom lists"
+                            hx-get="{% media_view_url 'lists_modal' session.item %}"
+                            hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}"}'
+                            hx-target="#session-lists-{{ session.id }}"
+                            hx-trigger="click once"
+                            @click="listsOpen = true">
+                        {% include "app/icons/list-add.svg" with classes="w-4 h-4" %}
+                    </button>
+
+                    {# History Button #}
+                    <button class="p-2.5 bg-amber-600 text-white rounded-full hover:bg-amber-500 hover:scale-110 hover:shadow-[0_0_15px_rgba(245,158,11,0.5)] transition-all duration-200 cursor-pointer"
+                            title="View your activity history"
+                            hx-get="{% media_view_url 'history_modal' session.item %}"
+                            hx-vals='{"return_url": "{{ request.get_full_path|urlencode }}"}'
+                            hx-target="#session-history-{{ session.id }}"
+                            hx-trigger="click once"
+                            @click="historyOpen = true">
+                        {% include "app/icons/history.svg" with classes="w-4 h-4" %}
+                    </button>
+                </div>
+            </div>
+        {% endif %}
 
         <div class="absolute bottom-0 left-0 right-0 p-2 bg-black/60">
             <div class="w-full bg-gray-700 rounded-full h-1.5">
@@ -33,14 +77,56 @@
             </span>
         {% endif %}
         
-        <div class="flex justify-between items-center text-xs text-gray-400">
-            <span>
-                {{ session.media_type|title }}
-                {% if session.season and session.episode %}
-                    • S{{ session.season }}E{{ session.episode }}
+        <div class="flex items-center text-xs text-gray-400">
+            {# Media type - left aligned #}
+            <span class="flex-shrink-0">
+                {% if session.media_type == 'tv' %}TV{% else %}{{ session.media_type|title }}{% endif %}
+            </span>
+            
+            {# Center content: season/episode for TV or year for movies #}
+            <span class="flex-1 text-center">
+                {% if session.media_type == 'tv' and session.season and session.episode %}
+                    S{{ session.season }}E{{ session.episode }}
+                {% elif session.media_type == 'movie' and session.year %}
+                    {{ session.year }}
                 {% endif %}
             </span>
-            <span>{{ session.progress|floatformat:0 }}%</span>
+            
+            {# Progress - right aligned #}
+            <span class="flex-shrink-0">{{ session.progress|floatformat:0 }}%</span>
         </div>
     </div>
+
+    {# Modals #}
+    {% if session.item %}
+        {# Track Modal #}
+        <div x-show="trackOpen"
+             @keydown.escape.window="trackOpen = false"
+             class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="w-152 max-h-[90vh] px-4 md:px-0 relative z-60"
+                 @click.outside="trackOpen = false">
+                <div id="session-track-{{ session.id }}"></div>
+            </div>
+        </div>
+
+        {# Lists Modal #}
+        <div x-show="listsOpen"
+             @keydown.escape.window="listsOpen = false"
+             class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="w-96 max-h-[90vh] px-4 md:px-0 relative z-60"
+                 @click.outside="listsOpen = false">
+                <div id="session-lists-{{ session.id }}"></div>
+            </div>
+        </div>
+
+        {# History Modal #}
+        <div x-show="historyOpen"
+             @keydown.escape.window="historyOpen = false"
+             class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="w-96 max-h-[90vh] px-4 md:px-0 relative z-60"
+                 @click.outside="historyOpen = false">
+                <div id="session-history-{{ session.id }}"></div>
+            </div>
+        </div>
+    {% endif %}
 </div>
