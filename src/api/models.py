@@ -69,6 +69,10 @@ class ScrobbleSession(models.Model):
         choices=ScrobbleState.choices,
         default=ScrobbleState.WATCHING,
     )
+    already_scrobbled = models.BooleanField(
+        default=False,
+        help_text="Whether this session has already been marked as watched",
+    )
 
     # Client info
     player = models.CharField(max_length=100, blank=True)

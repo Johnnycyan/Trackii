@@ -241,7 +241,11 @@ def scrobble_start(request):
 @require_POST
 @token_required
 def scrobble_pause(request):
-    """Handle scrobble pause event - called when playback is paused."""
+    """Handle scrobble pause event - called when playback is paused.
+    
+    If paused at or above the scrobble threshold (80%), marks the media as watched.
+    This handles players that pause at end of playback instead of sending stop.
+    """
     data = parse_json_body(request)
     if data is None:
         return JsonResponse(
@@ -262,23 +266,51 @@ def scrobble_pause(request):
             status=404,
         )
 
-    session.progress = data.get("progress", session.progress)
+    progress = data.get("progress", session.progress)
+    session.progress = progress
     session.state = ScrobbleState.PAUSED
     session.save()
 
+    # If paused at or above threshold and not already scrobbled, mark as watched
+    should_scrobble = progress >= SCROBBLE_THRESHOLD and not session.already_scrobbled
+    if should_scrobble:
+        _mark_as_watched(session, user)
+        session.already_scrobbled = True
+        session.save(update_fields=["already_scrobbled"])
+
+        # Log the scrobble
+        ScrobbleLog.objects.create(
+            user=user,
+            session_id=session.id,
+            item=session.item,
+            media_type=session.media_type,
+            title=session.title or (session.item.title if session.item else "Unknown"),
+            season=session.season,
+            episode=session.episode,
+            action="pause_scrobble",
+            final_progress=progress,
+            was_scrobbled=True,
+            started_at=session.started_at,
+            ended_at=timezone.now(),
+            player=session.player,
+            client_id=session.client_id,
+        )
+
     logger.info(
-        "Paused scrobble session %s for user %s at %.1f%%",
+        "Paused scrobble session %s for user %s at %.1f%%%s",
         session.id,
         user.username,
         session.progress,
+        " (marked as watched)" if should_scrobble else "",
     )
 
     return JsonResponse(
         {
             "action": "pause",
-            "status": "paused",
+            "status": "scrobbled" if should_scrobble else "paused",
             "scrobble_id": str(session.id),
             "progress": session.progress,
+            "watched": should_scrobble,
         }
     )
 
@@ -314,11 +346,13 @@ def scrobble_stop(request):
     session.state = ScrobbleState.STOPPED
     session.save()
 
-    # Determine if we should mark as watched
-    was_scrobbled = progress >= SCROBBLE_THRESHOLD
+    # Determine if we should mark as watched (only if not already scrobbled)
+    should_scrobble = progress >= SCROBBLE_THRESHOLD and not session.already_scrobbled
 
-    if was_scrobbled:
+    if should_scrobble:
         _mark_as_watched(session, user)
+        session.already_scrobbled = True
+        session.save(update_fields=["already_scrobbled"])
 
     # Log the scrobble
     ScrobbleLog.objects.create(
@@ -331,14 +365,14 @@ def scrobble_stop(request):
         episode=session.episode,
         action="stop",
         final_progress=progress,
-        was_scrobbled=was_scrobbled,
+        was_scrobbled=should_scrobble,
         started_at=session.started_at,
         ended_at=timezone.now(),
         player=session.player,
         client_id=session.client_id,
     )
 
-    status_text = "scrobbled" if was_scrobbled else "cancelled"
+    status_text = "scrobbled" if should_scrobble else "cancelled"
     logger.info(
         "Stopped scrobble session %s for user %s at %.1f%% (%s)",
         session.id,
@@ -352,7 +386,7 @@ def scrobble_stop(request):
             "action": "stop",
             "status": status_text,
             "progress": progress,
-            "watched": was_scrobbled,
+            "watched": should_scrobble,
             "scrobble_id": str(session.id),
             "media": _get_session_media_info(session),
         }
@@ -686,7 +720,11 @@ def _mark_movie_watched(session, user, now):
 
 
 def _mark_tv_watched(session, user, now):
-    """Mark TV episode as watched."""
+    """Mark TV episode as watched.
+    
+    Allows rewatches on different days but prevents duplicate entries
+    for the same episode on the same day.
+    """
     if not session.tmdb_id:
         logger.warning("Cannot mark TV as watched: no TMDB ID")
         return
@@ -740,6 +778,23 @@ def _mark_tv_watched(session, user, now):
         )
 
         episode_item = season_instance.get_episode_item(episode_number, season_metadata)
+
+        # Check if already watched today (prevent same-day duplicates)
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        already_watched_today = app.models.Episode.objects.filter(
+            item=episode_item,
+            related_season=season_instance,
+            end_date__gte=today_start,
+        ).exists()
+
+        if already_watched_today:
+            logger.info(
+                "Skipping duplicate watch (already watched today): %s S%02dE%02d",
+                tv_metadata["title"],
+                season_number,
+                episode_number,
+            )
+            return
 
         app.models.Episode.objects.create(
             item=episode_item,
