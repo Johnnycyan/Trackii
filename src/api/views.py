@@ -867,8 +867,17 @@ def _auto_track_tv(session, user, now):
         logger.debug("Cannot auto-track TV: no TMDB ID")
         return
 
+    season_number = session.season
+    if not season_number:
+        logger.debug("Cannot auto-track TV season: missing season number")
+        return
+
     try:
-        tv_metadata = app.providers.tmdb.tv(int(session.tmdb_id))
+        tv_metadata = app.providers.tmdb.tv_with_seasons(
+            int(session.tmdb_id),
+            [season_number],
+        )
+        season_metadata = tv_metadata.get(f"season/{season_number}", {})
 
         tv_item, _ = Item.objects.get_or_create(
             media_id=session.tmdb_id,
@@ -880,15 +889,45 @@ def _auto_track_tv(session, user, now):
             },
         )
 
-        # Only create TV instance if none exists
-        existing = app.models.TV.objects.filter(item=tv_item, user=user).first()
-        if not existing:
-            app.models.TV.objects.create(
-                item=tv_item,
+        # Create TV instance if none exists
+        tv_instance, tv_created = app.models.TV.objects.get_or_create(
+            item=tv_item,
+            user=user,
+            defaults={"status": Status.IN_PROGRESS.value},
+        )
+        if tv_created:
+            logger.info("Auto-tracked TV as In-Progress: %s", tv_metadata["title"])
+
+        # Create Season item and instance for the episode's season
+        season_item, _ = Item.objects.get_or_create(
+            media_id=session.tmdb_id,
+            source=Sources.TMDB.value,
+            media_type=MediaTypes.SEASON.value,
+            season_number=season_number,
+            defaults={
+                "title": tv_metadata["title"],
+                "image": season_metadata.get("image", tv_metadata["image"]),
+            },
+        )
+
+        # Create Season instance if none exists
+        season_exists = app.models.Season.objects.filter(
+            item=season_item,
+            user=user,
+            related_tv=tv_instance,
+        ).exists()
+        if not season_exists:
+            app.models.Season.objects.create(
+                item=season_item,
                 user=user,
+                related_tv=tv_instance,
                 status=Status.IN_PROGRESS.value,
             )
-            logger.info("Auto-tracked TV as In-Progress: %s", tv_metadata["title"])
+            logger.info(
+                "Auto-tracked TV season as In-Progress: %s S%02d",
+                tv_metadata["title"],
+                season_number,
+            )
     except Exception as e:
         logger.warning("Failed to auto-track TV: %s", e)
 
