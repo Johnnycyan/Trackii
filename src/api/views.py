@@ -862,7 +862,12 @@ def _auto_track_movie(session, user, now):
 
 
 def _auto_track_tv(session, user, now):
-    """Auto-track TV show as In-Progress."""
+    """Auto-track TV show as In-Progress.
+    
+    Creates/updates tracking entries for the TV show and the specific season
+    being watched. Uses save_base() to avoid triggering the TV model's custom
+    save logic which would auto-create Season 1.
+    """
     if not session.tmdb_id:
         logger.debug("Cannot auto-track TV: no TMDB ID")
         return
@@ -889,16 +894,24 @@ def _auto_track_tv(session, user, now):
             },
         )
 
-        # Create TV instance if none exists
-        tv_instance, tv_created = app.models.TV.objects.get_or_create(
+        # Check if TV instance exists
+        tv_instance = app.models.TV.objects.filter(
             item=tv_item,
             user=user,
-            defaults={"status": Status.IN_PROGRESS.value},
-        )
-        if tv_created:
+        ).first()
+        
+        if not tv_instance:
+            # Create TV instance using save_base to avoid triggering
+            # _start_next_available_season() which would create Season 1
+            tv_instance = app.models.TV(
+                item=tv_item,
+                user=user,
+                status=Status.IN_PROGRESS.value,
+            )
+            app.models.TV.save_base(tv_instance)
             logger.info("Auto-tracked TV as In-Progress: %s", tv_metadata["title"])
 
-        # Create Season item and instance for the episode's season
+        # Create Season item for the episode's season
         season_item, _ = Item.objects.get_or_create(
             media_id=session.tmdb_id,
             source=Sources.TMDB.value,
@@ -910,21 +923,34 @@ def _auto_track_tv(session, user, now):
             },
         )
 
-        # Create Season instance if none exists
-        season_exists = app.models.Season.objects.filter(
+        # Get or create Season instance for the current season
+        season_instance = app.models.Season.objects.filter(
             item=season_item,
             user=user,
             related_tv=tv_instance,
-        ).exists()
-        if not season_exists:
-            app.models.Season.objects.create(
+        ).first()
+        
+        if not season_instance:
+            # Create new Season instance using save_base to avoid triggering
+            # _sync_status_after_episode_change() which would set it to PLANNING
+            season_instance = app.models.Season(
                 item=season_item,
                 user=user,
                 related_tv=tv_instance,
                 status=Status.IN_PROGRESS.value,
             )
+            app.models.Season.save_base(season_instance)
             logger.info(
                 "Auto-tracked TV season as In-Progress: %s S%02d",
+                tv_metadata["title"],
+                season_number,
+            )
+        elif season_instance.status != Status.IN_PROGRESS.value:
+            # Update existing season to In-Progress if not already
+            season_instance.status = Status.IN_PROGRESS.value
+            season_instance.save(update_fields=["status"])
+            logger.info(
+                "Updated TV season to In-Progress: %s S%02d",
                 tv_metadata["title"],
                 season_number,
             )
