@@ -17,7 +17,7 @@ from django.utils.dateparse import parse_date
 from django.utils.timezone import datetime
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from api.models import ScrobbleSession
+from api.models import ScrobbleSession, ScrobbleState
 from api.scrobble_helpers import stop_active_sessions_for_item
 from app import cache_utils, config, helpers, history_cache, history_processor
 from app import statistics as stats
@@ -42,6 +42,7 @@ def home(request):
     active_sessions = (
         ScrobbleSession.objects.filter(
             user=request.user,
+            state__in=[ScrobbleState.WATCHING, ScrobbleState.PAUSED],
             progress__gt=0,
             progress__lt=80,
             item__isnull=False,
@@ -55,16 +56,28 @@ def home(request):
     if active_sessions:
         completed_item_ids = set()
         for session in active_sessions:
-            model = apps.get_model(
-                "app",
-                session.item.media_type,
-            )
-            if model.objects.filter(
-                user=request.user,
-                item=session.item,
-                status=Status.COMPLETED.value,
-            ).exists():
-                completed_item_ids.add(session.item_id)
+            item = session.item
+            media_type = item.media_type
+
+            if media_type == MediaTypes.EPISODE.value:
+                # Episodes don't have status; check via Season
+                is_completed = Season.objects.filter(
+                    item__media_id=item.media_id,
+                    item__source=item.source,
+                    item__season_number=item.season_number,
+                    related_tv__user=request.user,
+                    status=Status.COMPLETED.value,
+                ).exists()
+            else:
+                model = apps.get_model("app", media_type)
+                is_completed = model.objects.filter(
+                    user=request.user,
+                    item=item,
+                    status=Status.COMPLETED.value,
+                ).exists()
+
+            if is_completed:
+                completed_item_ids.add(item.id)
     else:
         completed_item_ids = set()
 
