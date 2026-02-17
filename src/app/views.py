@@ -17,7 +17,8 @@ from django.utils.dateparse import parse_date
 from django.utils.timezone import datetime
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from api.models import ScrobbleSession, ScrobbleState
+from api.models import ScrobbleSession
+from api.scrobble_helpers import stop_active_sessions_for_item
 from app import cache_utils, config, helpers, history_cache, history_processor
 from app import statistics as stats
 from app.forms import EpisodeForm, ManualItemForm, get_form_class
@@ -38,16 +39,41 @@ def home(request):
 
     # Fetch active scrobble sessions (partial watches < 80%)
     # Fetch more items to allow for filtering duplicates in python
-    active_sessions = ScrobbleSession.objects.filter(
-        user=request.user,
-        progress__gt=0,
-        progress__lt=80,
-        item__isnull=False,
-    ).select_related("item").order_by("-updated_at")[:20]
+    active_sessions = (
+        ScrobbleSession.objects.filter(
+            user=request.user,
+            progress__gt=0,
+            progress__lt=80,
+            item__isnull=False,
+        )
+        .select_related("item")
+        .order_by("-updated_at")[:20]
+    )
+
+    # Collect item IDs that the user has already completed manually
+    # so we can filter them out of the "Continue Watching" section
+    if active_sessions:
+        completed_item_ids = set()
+        for session in active_sessions:
+            model = apps.get_model(
+                "app",
+                session.item.media_type,
+            )
+            if model.objects.filter(
+                user=request.user,
+                item=session.item,
+                status=Status.COMPLETED.value,
+            ).exists():
+                completed_item_ids.add(session.item_id)
+    else:
+        completed_item_ids = set()
 
     watching_sessions = []
     seen_items = set()
     for session in active_sessions:
+        # Skip sessions for items the user has already completed
+        if session.item.id in completed_item_ids:
+            continue
         if session.item.id not in seen_items:
             watching_sessions.append(session)
             seen_items.add(session.item.id)
@@ -103,9 +129,13 @@ def progress_edit(request, media_type, instance_id):
     elif operation == "decrease":
         media.decrease_progress()
 
+    # If progress change resulted in completion, stop active scrobble sessions
+    media.refresh_from_db()
+    if media.status == Status.COMPLETED.value:
+        stop_active_sessions_for_item(request.user, media.item)
+
     if media_type == MediaTypes.SEASON.value:
         # clear prefetch cache to get the updated episodes
-        media.refresh_from_db()
         prefetch_related_objects([media], "episodes")
 
     context = {
@@ -752,6 +782,12 @@ def media_save(request):
     if form.is_valid():
         form.save()
         logger.info("%s saved successfully.", form.instance)
+
+        # Stop active scrobble sessions when media is manually saved
+        # (e.g. status changed to Completed, or progress updated)
+        saved_instance = form.instance
+        if hasattr(saved_instance, "item") and saved_instance.item:
+            stop_active_sessions_for_item(request.user, saved_instance.item)
     else:
         logger.error(form.errors.as_json())
         for field, errors in form.errors.items():
@@ -777,8 +813,12 @@ def media_delete(request):
             media_type,
             instance_id,
         )
+        item = media.item
         media.delete()
         logger.info("%s deleted successfully.", media)
+
+        # Stop active scrobble sessions for the deleted media
+        stop_active_sessions_for_item(request.user, item)
 
     except model.DoesNotExist:
         logger.warning("The %s was already deleted before.", media_type)
@@ -839,6 +879,9 @@ def episode_save(request):
         logger.info("%s did not exist, it was created successfully.", related_season)
 
     related_season.watch(episode_number, form.cleaned_data["end_date"])
+
+    # Stop active scrobble sessions for this TV show/season
+    stop_active_sessions_for_item(request.user, related_season.item)
 
     return helpers.redirect_back(request)
 
