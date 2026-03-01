@@ -8,6 +8,7 @@ on:
     branches:
       - main
       - dev
+      - bugfix
   workflow_dispatch:
 
 permissions:

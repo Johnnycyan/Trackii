@@ -6,11 +6,14 @@ on:
     branches:
       - "dev"
       - "release"
+      - "bugfix"
     tags:
       - "v*"
   pull_request:
     branches:
       - "dev"
+      - "release"
+      - "bugfix"
 
 env:
   REGISTRY: ghcr.io
