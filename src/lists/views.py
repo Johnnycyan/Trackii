@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Exists, F, OuterRef, Q, Subquery
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_POST
 
 from app import helpers
@@ -25,6 +26,7 @@ from users.models import ListDetailSortChoices, ListSortChoices
 logger = logging.getLogger(__name__)
 
 
+@never_cache
 @require_GET
 def lists(request):
     """Return the custom list page."""
@@ -112,6 +114,7 @@ def lists(request):
     )
 
 
+@never_cache
 @login_not_required
 @require_GET
 def list_detail(request, list_id):
@@ -350,6 +353,7 @@ def delete(request):
     return helpers.redirect_back(request)
 
 
+@never_cache
 @require_GET
 def lists_modal(
     request,
@@ -744,6 +748,7 @@ def submit_recommendation(request, list_id):
     return redirect("list_detail", list_id=list_id)
 
 
+@never_cache
 @require_GET
 def list_recommendations(request, list_id):
     """View all recommendations for a list (owner/collaborators only)."""
@@ -769,6 +774,7 @@ def list_recommendations(request, list_id):
     return render(request, "lists/list_recommendations.html", context)
 
 
+@never_cache
 @require_GET
 def list_activity(request, list_id):
     """View activity history for a list (owner/collaborators only)."""
