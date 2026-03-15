@@ -82,5 +82,4 @@ urlpatterns = [
     ),
     path("statistics", views.statistics, name="statistics"),
     path("history", views.history, name="history"),
-    path("serviceworker.js", views.service_worker, name="service_worker"),
 ]
