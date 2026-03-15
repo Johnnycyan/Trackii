@@ -1,4 +1,4 @@
-const CACHE_NAME = "trackii-v2";
+const CACHE_NAME = "trackii-v3";
 const urlsToCache = [
   "/static/css/main.css",
   "/static/favicon/android-chrome-192x192.png",
@@ -31,8 +31,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Only cache GET requests for static assets
+  // Only cache GET requests
   if (request.method !== "GET") {
+    return;
+  }
+
+  const url = new URL(request.url);
+  // Do not cache dynamic list requests (e.g. HTMX, JSON)
+  if (url.pathname.startsWith("/list")) {
     return;
   }
 
