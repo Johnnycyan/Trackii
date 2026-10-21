@@ -17,7 +17,10 @@ COPY ./nginx.conf /etc/nginx/nginx.conf
 
 WORKDIR /trackii
 
-RUN apk add --no-cache nginx shadow \
+# Upgrade the CA bundle so the eMudhra/emSign distrust (ca-certificates
+# 20261020) is picked up even on a stale base image
+RUN apk add --no-cache --upgrade ca-certificates ca-certificates-bundle \
+    && apk add --no-cache nginx shadow \
     && pip install --no-cache-dir -r /requirements.txt \
     && pip install --no-cache-dir "setuptools>=81,<82" supervisor==4.2.5 \
     && rm -rf /root/.cache /tmp/* \
